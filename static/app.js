@@ -75,6 +75,65 @@ function renderHeadlines() {
 
 // ---------- Context request ----------
 
+// ---------- Timer ----------
+// Shows elapsed time, and an estimate based on how long this browser's recent requests took.
+
+let timerInterval = null;
+
+function formatDuration(seconds) {
+  const s = Math.max(0, Math.round(seconds));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+function recentDurations(kind) {
+  try {
+    return JSON.parse(localStorage.getItem(`durations:${kind}`) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function recordDuration(kind, seconds) {
+  try {
+    const list = [...recentDurations(kind), seconds].slice(-8);
+    localStorage.setItem(`durations:${kind}`, JSON.stringify(list));
+  } catch {
+    /* storage unavailable: estimates just won't be shown */
+  }
+}
+
+function typicalDuration(kind) {
+  const list = recentDurations(kind);
+  if (!list.length) return null;
+  const sorted = [...list].sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length / 2)];
+}
+
+function startTimer(kind) {
+  const started = Date.now();
+  const typical = typicalDuration(kind);
+  const tick = () => {
+    const elapsed = (Date.now() - started) / 1000;
+    $("elapsed").textContent = formatDuration(elapsed);
+    let note = "";
+    if (typical) {
+      note = elapsed < typical
+        ? `about ${formatDuration(typical - elapsed)} left (typical: ${formatDuration(typical)})`
+        : `taking longer than usual (typical: ${formatDuration(typical)})`;
+    } else {
+      note = "first run: timing will be learned from it";
+    }
+    $("estimate").textContent = note;
+  };
+  tick();
+  clearInterval(timerInterval);
+  timerInterval = setInterval(tick, 1000);
+  return () => {
+    clearInterval(timerInterval);
+    return (Date.now() - started) / 1000;
+  };
+}
+
 const VIEWS = ["empty", "loading", "error", "briefing", "guide"];
 let currentBriefingTitle = "";
 
@@ -97,6 +156,8 @@ async function runJob(endpoint, body, loadingLabel, onResult) {
   $("loading-label").textContent = loadingLabel;
   $("progress").replaceChildren();
   show("loading");
+  const stopTimer = startTimer(endpoint);
+  let succeeded = false;
 
   try {
     const res = await fetch(endpoint, {
@@ -128,6 +189,7 @@ async function runJob(endpoint, body, loadingLabel, onResult) {
         } else if (event.type === "result") {
           onResult(event.data);
           finished = true;
+          succeeded = true;
         } else if (event.type === "error") {
           throw new Error(event.message);
         }
@@ -138,6 +200,9 @@ async function runJob(endpoint, body, loadingLabel, onResult) {
     $("error").textContent = err.message || String(err);
     show("error");
   } finally {
+    const seconds = stopTimer();
+    // Cached results come back instantly; only learn from real runs.
+    if (succeeded && seconds > 5) recordDuration(endpoint, seconds);
     setBusy(false);
   }
 }

@@ -16,3 +16,5 @@ services:
         sync: false
       - key: CONTEXT_EFFORT
         value: medium
+      - key: FAST_MODE
+        value: "1"

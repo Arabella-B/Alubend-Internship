@@ -143,6 +143,9 @@ button:disabled { opacity: 0.6; cursor: progress; }
 
 .loading { display: flex; gap: 16px; align-items: flex-start; max-width: 640px; margin: 8vh auto; }
 .loading-title { font-family: var(--serif); font-size: 20px; margin: 0 0 8px; }
+.timer { margin: 0 0 10px; font-variant-numeric: tabular-nums; }
+#elapsed { font-weight: 600; font-size: 18px; }
+#estimate { margin-left: 8px; font-size: 13px; }
 .progress { list-style: none; padding: 0; margin: 0 0 8px; font-size: 13px; color: var(--muted); }
 .progress li { padding: 2px 0; overflow-wrap: anywhere; }
 .progress li::before { content: "→ "; color: var(--accent); }

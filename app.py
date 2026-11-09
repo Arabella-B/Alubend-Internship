@@ -6,6 +6,7 @@ Run with:  python app.py   then open http://localhost:5050
 from __future__ import annotations
 
 import json
+import logging
 import os
 
 import anthropic
@@ -13,6 +14,8 @@ from flask import Flask, Response, jsonify, render_template, request, stream_wit
 
 from feeds import get_headlines
 from historian import generate_context, generate_source_guide
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
 app = Flask(__name__)
 

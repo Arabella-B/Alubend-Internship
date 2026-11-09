@@ -7,7 +7,9 @@ strict schema gives the web page a predictable structure to render.
 
 from __future__ import annotations
 
+import logging
 import os
+import time
 from typing import Iterator, Optional
 
 import anthropic
@@ -15,6 +17,11 @@ import anthropic
 MODEL = os.environ.get("CONTEXT_MODEL", "claude-opus-5-5")
 EFFORT = os.environ.get("CONTEXT_EFFORT", "medium")  # low | medium | high | xhigh | max
 MAX_ROUNDS = 6
+# Fast mode: same model and quality, up to ~2.5x faster output, at twice the per-token price.
+FAST_MODE = os.environ.get("FAST_MODE", "1") != "0"
+_fast_supported = True  # switched off if the API rejects fast mode for this account
+
+log = logging.getLogger("historian")
 
 SYSTEM_PROMPT = """You are a historian who helps readers understand the news. Given a \
 contemporary news story, explain the history a thoughtful reader needs to make sense of it: \
@@ -60,6 +67,8 @@ holders would recognise, and separate established fact from interpretation.
 - Be concrete: real dates, names, places and numbers. If you are unsure of a detail, say \
 so rather than guessing.
 - Only list sources you actually consulted or that are well-established references.
+- Work efficiently: when you need several searches or pages, request them together in the \
+same step rather than one at a time, and don't repeat a search you have already run.
 
 When you are finished, call the present_context tool exactly once with the full briefing. \
 Do not write the briefing as plain text."""
@@ -270,6 +279,8 @@ are not neutral by default.
 - Keep quotations short (under 25 words each) and only quote what you need to explain.
 - If you can't read the source itself, say so plainly in the summary and base the guide on \
 what you can establish about it.
+- Work efficiently: when you need several searches or pages, request them together in the \
+same step rather than one at a time, and don't repeat a search you have already run.
 
 When you are finished, call the present_source_guide tool exactly once. Do not write the \
 guide as plain text."""
@@ -374,32 +385,75 @@ def _build_source_request(title: str, url: str, text: str, story_title: str) -> 
 # ---------------------------------------------------------------------------
 
 
+def _stream_round(client, system: str, tools: list, messages: list, fast: bool):
+    """Open one streamed request. Fast mode runs the same model with faster output."""
+    betas = ["server-side-fallback-2026-07-01"]
+    extra = {}
+    if fast:
+        betas.append("fast-mode-2026-02-01")
+        extra["speed"] = "fast"
+    return client.beta.messages.stream(
+        model=MODEL,
+        max_tokens=32000,
+        system=system,
+        tools=tools,
+        messages=messages,
+        thinking={"type": "adaptive"},
+        output_config={"effort": EFFORT},
+        # Reuse the cached prompt and earlier research when a turn continues.
+        cache_control={"type": "ephemeral"},
+        # If a safety classifier declines, retry on Anthropic's recommended fallback model.
+        betas=betas,
+        fallbacks="default",
+        **extra,
+    )
+
+
 def _run(system: str, tools: list, result_tool: str, request: str, what: str) -> Iterator[dict]:
     """Run Claude until it calls `result_tool`; yield status events, then a result or error."""
+    global _fast_supported
     client = _get_client()
     messages: list = [{"role": "user", "content": request}]
+    started = time.monotonic()
 
-    for _ in range(MAX_ROUNDS):
-        with client.beta.messages.stream(
-            model=MODEL,
-            max_tokens=32000,
-            system=system,
-            tools=tools,
-            messages=messages,
-            thinking={"type": "adaptive"},
-            output_config={"effort": EFFORT},
-            # If a safety classifier declines, retry on Anthropic's recommended fallback model.
-            betas=["server-side-fallback-2026-07-01"],
-            fallbacks="default",
-        ) as stream:
-            for event in stream:
-                if event.type == "content_block_stop":
-                    block = stream.current_message_snapshot.content[event.index]
-                    if block.type == "server_tool_use":
-                        note = _describe_tool_call(block)
-                        if note:
-                            yield {"type": "status", "message": note}
-            message = stream.get_final_message()
+    for round_number in range(1, MAX_ROUNDS + 1):
+        fast = FAST_MODE and _fast_supported
+        try:
+            with _stream_round(client, system, tools, messages, fast) as stream:
+                for event in stream:
+                    if event.type == "content_block_start" and event.content_block.type == "tool_use":
+                        yield {"type": "status", "stage": "writing", "message": f"Writing the {what}…"}
+                    elif event.type == "content_block_stop":
+                        block = stream.current_message_snapshot.content[event.index]
+                        if block.type == "server_tool_use":
+                            note = _describe_tool_call(block)
+                            if note:
+                                yield {"type": "status", "stage": "research", "message": note}
+                message = stream.get_final_message()
+        except (anthropic.BadRequestError, anthropic.PermissionDeniedError, anthropic.RateLimitError) as exc:
+            if not fast:
+                raise
+            # Fast mode is a research preview with its own rate limit; fall back to standard speed.
+            if not isinstance(exc, anthropic.RateLimitError):
+                _fast_supported = False
+            log.warning("Fast mode unavailable (%s); retrying at standard speed", exc.__class__.__name__)
+            with _stream_round(client, system, tools, messages, False) as stream:
+                for event in stream:
+                    if event.type == "content_block_stop":
+                        block = stream.current_message_snapshot.content[event.index]
+                        if block.type == "server_tool_use":
+                            note = _describe_tool_call(block)
+                            if note:
+                                yield {"type": "status", "stage": "research", "message": note}
+                message = stream.get_final_message()
+
+        usage = message.usage
+        log.info(
+            "%s round %d: %.1fs elapsed, stop=%s, speed=%s, in=%s, cached=%s, out=%s",
+            what, round_number, time.monotonic() - started, message.stop_reason,
+            getattr(usage, "speed", None), usage.input_tokens,
+            usage.cache_read_input_tokens, usage.output_tokens,
+        )
 
         if message.stop_reason == "refusal":
             yield {"type": "error", "message": f"Claude declined to write the {what}."}
@@ -417,7 +471,6 @@ def _run(system: str, tools: list, result_tool: str, request: str, what: str) ->
         messages.append({"role": "assistant", "content": message.content})
         if message.stop_reason != "pause_turn":
             messages.append({"role": "user", "content": f"Please deliver the {what} by calling the {result_tool} tool."})
-        yield {"type": "status", "message": f"Writing the {what}…"}
 
     yield {"type": "error", "message": f"Claude did not finish the {what}. Please try again."}
 
