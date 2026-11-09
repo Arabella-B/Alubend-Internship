@@ -1,0 +1,18 @@
+# Render Blueprint: deploys Then & Now as a Python web service.
+# In Render: New > Blueprint, pick this repo, then enter your ANTHROPIC_API_KEY when asked.
+services:
+  - type: web
+    name: then-and-now
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # Threads keep the page responsive while a briefing streams; briefings can take ~90s, so allow a long timeout.
+    startCommand: gunicorn app:app --worker-class gthread --workers 1 --threads 8 --timeout 300 --bind 0.0.0.0:$PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CONTEXT_EFFORT
+        value: medium

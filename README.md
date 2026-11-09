@@ -25,6 +25,23 @@ export ANTHROPIC_API_KEY=sk-ant-...
 
 Then open <http://localhost:5050>.
 
+## Deploying to Render
+
+This is a Python server, so it must be a **Web Service** on Render, not a Static Site. A Static Site only shows
+"Not Found", because there is no `index.html` in the repo.
+
+Easiest: in Render choose **New → Blueprint**, pick this repo, and enter your `ANTHROPIC_API_KEY` when asked.
+`render.yaml` sets up everything else.
+
+Or set it up by hand with **New → Web Service**:
+
+| Setting | Value |
+| --- | --- |
+| Runtime | Python 3 |
+| Build command | `pip install -r requirements.txt` |
+| Start command | `gunicorn app:app --worker-class gthread --workers 1 --threads 8 --timeout 300 --bind 0.0.0.0:$PORT` |
+| Environment variable | `ANTHROPIC_API_KEY` = your key |
+
 ## Configuration
 
 | Variable | Default | Meaning |
