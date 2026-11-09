@@ -33,9 +33,25 @@ against the earlier history of foreign oil concessions and great-power rivalry i
 Work across time scales: the deep roots, the formative turning points, and the recent \
 run-up to today's events.
 
+Tell the history from more than one side. English-language news and popular history often \
+default to the viewpoint of Western governments, and their framing can quietly become the \
+narrator's voice. Avoid that. Tell events as they were experienced by the people they \
+happened to, as well as by the powers that acted on them, and don't adopt any one \
+government's description as neutral fact. For example, Western accounts often say US \
+forces "liberated" Korea in 1945. But the US Army Military Government then governed the \
+south for three years, kept many Japanese-era officials and police in place, and set aside \
+the Korean People's Republic that Koreans had formed themselves, so many Koreans experienced \
+it as a new occupation. Where descriptions like this are contested, say who uses which \
+account and why, instead of choosing one. Apply the same scrutiny to every power involved, \
+Western or not.
+
 How to work:
 - If an article URL is provided, read it with web_fetch first. Use web_search to confirm \
 recent developments, since the story may be newer than your training data.
+- Ground the history in scholarship, not just news coverage: search for academic work \
+(journal articles, university press books, university and research-institute pages) and \
+look especially for historians and writers from the countries and communities involved. \
+Where they help, include primary sources and first-hand accounts from the people affected.
 - Keep the focus on history. Describe the current events only briefly, as the starting point.
 - Be even-handed on contested topics: present each major perspective in terms its own \
 holders would recognise, and separate established fact from interpretation.
@@ -62,6 +78,7 @@ PRESENT_CONTEXT_TOOL = {
             "timeline",
             "historical_parallels",
             "perspectives",
+            "contested_accounts",
             "key_terms",
             "open_questions",
             "sources",
@@ -114,7 +131,8 @@ PRESENT_CONTEXT_TOOL = {
             },
             "perspectives": {
                 "type": "array",
-                "description": "The main viewpoints of the parties involved.",
+                "description": "The main viewpoints, including the ordinary people and communities "
+                "the history happened to, not only governments and officials.",
                 "items": {
                     "type": "object",
                     "additionalProperties": False,
@@ -126,6 +144,31 @@ PRESENT_CONTEXT_TOOL = {
                             "type": "string",
                             "description": "The past events this group remembers and draws on, and "
                             "how they shape its view today.",
+                        },
+                    },
+                },
+            },
+            "contested_accounts": {
+                "type": "array",
+                "description": "1-4 events in this history that different groups describe in "
+                "conflicting ways (for example 'liberation' versus 'occupation').",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["event", "accounts"],
+                    "properties": {
+                        "event": {"type": "string"},
+                        "accounts": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "required": ["held_by", "account"],
+                                "properties": {
+                                    "held_by": {"type": "string", "description": "Who tells it this way."},
+                                    "account": {"type": "string", "description": "How they describe it, and why."},
+                                },
+                            },
                         },
                     },
                 },
@@ -147,12 +190,16 @@ PRESENT_CONTEXT_TOOL = {
             },
             "sources": {
                 "type": "array",
-                "description": "Sources consulted, with URLs.",
+                "description": "Sources consulted, with URLs. Include academic work where possible.",
                 "items": {
                     "type": "object",
                     "additionalProperties": False,
-                    "required": ["title", "url"],
-                    "properties": {"title": {"type": "string"}, "url": {"type": "string"}},
+                    "required": ["title", "url", "kind"],
+                    "properties": {
+                        "title": {"type": "string", "description": "Title, with author where known."},
+                        "url": {"type": "string"},
+                        "kind": {"type": "string", "enum": ["academic", "primary", "news", "reference"]},
+                    },
                 },
             },
         },
@@ -160,8 +207,8 @@ PRESENT_CONTEXT_TOOL = {
 }
 
 TOOLS = [
-    {"type": "web_fetch_20260209", "name": "web_fetch", "max_uses": 3},
-    {"type": "web_search_20260209", "name": "web_search", "max_uses": 6},
+    {"type": "web_fetch_20260209", "name": "web_fetch", "max_uses": 6},
+    {"type": "web_search_20260209", "name": "web_search", "max_uses": 10},
     PRESENT_CONTEXT_TOOL,
 ]
 

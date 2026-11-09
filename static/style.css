@@ -223,6 +223,19 @@ h3.section { font-size: 21px; margin: 32px 0 12px; }
 .questions, .sources { padding-left: 20px; margin: 0; }
 .questions li, .sources li { margin-bottom: 6px; }
 .sources a { color: var(--accent); overflow-wrap: anywhere; }
+.kind {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 5px;
+  margin-right: 6px;
+  color: var(--muted);
+}
+.kind-academic { color: var(--accent); border-color: var(--accent); }
 
 .disclaimer { margin-top: 32px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 12px; }
 

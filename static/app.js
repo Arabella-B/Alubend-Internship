@@ -182,6 +182,19 @@ function renderBriefing(c) {
     ].filter(Boolean))
   );
 
+  const contested = c.contested_accounts || [];
+  $("b-contested-wrap").hidden = contested.length === 0;
+  $("b-contested").replaceChildren(
+    ...contested.map((item) =>
+      el(
+        "div",
+        { class: "card" },
+        el("h4", {}, item.event),
+        ...item.accounts.map((a) => el("p", {}, el("strong", {}, `${a.held_by}: `), a.account))
+      )
+    )
+  );
+
   $("b-terms").replaceChildren(
     ...c.key_terms.map((t) => el("div", {}, el("dt", {}, t.term), el("dd", {}, t.explanation)))
   );
@@ -191,7 +204,12 @@ function renderBriefing(c) {
   $("b-sources").replaceChildren(
     ...c.sources.map((s) => {
       const href = safeUrl(s.url);
-      return el("li", {}, href ? el("a", { href, target: "_blank", rel: "noopener noreferrer" }, s.title || href) : s.title);
+      return el(
+        "li",
+        {},
+        s.kind ? el("span", { class: `kind kind-${s.kind}` }, s.kind) : null,
+        href ? el("a", { href, target: "_blank", rel: "noopener noreferrer" }, s.title || href) : s.title
+      );
     })
   );
 
