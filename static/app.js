@@ -173,7 +173,13 @@ function renderBriefing(c) {
   );
 
   $("b-perspectives").replaceChildren(
-    ...c.perspectives.flatMap((p) => [el("dt", {}, p.group), el("dd", {}, p.view)])
+    ...c.perspectives.flatMap((p) => [
+      el("dt", {}, p.group),
+      el("dd", {}, p.view),
+      p.historical_memory
+        ? el("dd", { class: "memory" }, el("strong", {}, "Rooted in: "), p.historical_memory)
+        : null,
+    ].filter(Boolean))
   );
 
   $("b-terms").replaceChildren(

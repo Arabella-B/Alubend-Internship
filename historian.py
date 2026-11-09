@@ -21,6 +21,18 @@ contemporary news story, explain the history a thoughtful reader needs to make s
 the long-run roots, the turning points that led here, relevant precedents and how they \
 turned out, and the competing perspectives of the people involved.
 
+Go back far enough. The most common failure is starting the story too recently, with only \
+the last few years or the immediate trigger. Ask what a reader would need to know to \
+understand why the people involved see the situation the way they do, and follow that back \
+to its origin, even if it means decades or centuries. Collective memory of past events \
+(invasions, coups, colonial rule, partitions, revolutions, broken agreements, past \
+victories and humiliations) often explains present-day attitudes better than recent \
+events do. For example, Iranian distrust of Western involvement makes little sense without \
+the 1953 US- and UK-backed coup against Mossadegh, and that coup in turn makes more sense \
+against the earlier history of foreign oil concessions and great-power rivalry in Iran. \
+Work across time scales: the deep roots, the formative turning points, and the recent \
+run-up to today's events.
+
 How to work:
 - If an article URL is provided, read it with web_fetch first. Use web_search to confirm \
 recent developments, since the story may be newer than your training data.
@@ -66,12 +78,15 @@ PRESENT_CONTEXT_TOOL = {
             },
             "background": {
                 "type": "string",
-                "description": "The historical narrative: 3-6 paragraphs separated by blank lines, "
-                "from the deep roots up to the present.",
+                "description": "The historical narrative: 4-8 paragraphs separated by blank lines. "
+                "Open with the deepest roots that still shape how the people involved see this "
+                "story, then move through the formative turning points to the present.",
             },
             "timeline": {
                 "type": "array",
-                "description": "6-14 key moments in chronological order.",
+                "description": "8-16 key moments in chronological order. Start at the deep roots "
+                "described in the background, not just the recent run-up, so the timeline spans "
+                "the full arc of the story.",
                 "items": {
                     "type": "object",
                     "additionalProperties": False,
@@ -103,8 +118,16 @@ PRESENT_CONTEXT_TOOL = {
                 "items": {
                     "type": "object",
                     "additionalProperties": False,
-                    "required": ["group", "view"],
-                    "properties": {"group": {"type": "string"}, "view": {"type": "string"}},
+                    "required": ["group", "view", "historical_memory"],
+                    "properties": {
+                        "group": {"type": "string"},
+                        "view": {"type": "string"},
+                        "historical_memory": {
+                            "type": "string",
+                            "description": "The past events this group remembers and draws on, and "
+                            "how they shape its view today.",
+                        },
+                    },
                 },
             },
             "key_terms": {
