@@ -12,12 +12,13 @@ import anthropic
 from flask import Flask, Response, jsonify, render_template, request, stream_with_context
 
 from feeds import get_headlines
-from historian import generate_context
+from historian import generate_context, generate_source_guide
 
 app = Flask(__name__)
 
 # Briefings already generated in this run, so re-opening a story is instant and free.
 _briefings: dict = {}
+_source_guides: dict = {}
 
 
 def _sse(event: dict) -> str:
@@ -40,32 +41,22 @@ def headlines():
     return jsonify(get_headlines(force=force))
 
 
-@app.post("/api/context")
-def context():
-    body = request.get_json(silent=True) or {}
-    title = str(body.get("title", "")).strip()[:500]
-    summary = str(body.get("summary", "")).strip()[:2000]
-    url = str(body.get("url", "")).strip()[:2000]
-    article_text = str(body.get("text", "")).strip()[:40000]
+def _clean(body: dict, key: str, limit: int) -> str:
+    return str(body.get(key, "")).strip()[:limit]
 
-    if not title and not article_text:
-        return jsonify({"error": "Provide a headline or the article text."}), 400
-    if url and not url.startswith(("http://", "https://")):
-        return jsonify({"error": "The URL must start with http:// or https://"}), 400
-    if not title:
-        title = article_text.split("\n", 1)[0][:200]
 
-    cache_key = (title, url, article_text)
+def _stream(generator_factory, cache: dict, cache_key, first_status: str, what: str) -> Response:
+    """Stream a Claude job to the browser as server-sent events, caching the result."""
 
     def events():
-        if cache_key in _briefings:
-            yield _sse({"type": "result", "context": _briefings[cache_key]})
+        if cache_key in cache:
+            yield _sse({"type": "result", "data": cache[cache_key]})
             return
-        yield _sse({"type": "status", "message": "Reading up on the story…"})
+        yield _sse({"type": "status", "message": first_status})
         try:
-            for event in generate_context(title, summary, url, article_text):
+            for event in generator_factory():
                 if event["type"] == "result":
-                    _briefings[cache_key] = event["context"]
+                    cache[cache_key] = event["data"]
                 yield _sse(event)
         except anthropic.AuthenticationError:
             yield _sse({"type": "error", "message": "Anthropic API key is missing or invalid. Set ANTHROPIC_API_KEY."})
@@ -76,7 +67,7 @@ def context():
         except anthropic.APIConnectionError:
             yield _sse({"type": "error", "message": "Couldn't reach the Anthropic API. Check your connection."})
         except Exception as exc:  # e.g. no credentials configured at all
-            app.logger.exception("Briefing failed")
+            app.logger.exception("%s failed", what)
             message = str(exc)
             if "api_key" in message or "authentication" in message.lower():
                 message = "No Anthropic API key found. Set ANTHROPIC_API_KEY and restart the app."
@@ -86,6 +77,56 @@ def context():
         stream_with_context(events()),
         mimetype="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+def _bad_url(url: str) -> bool:
+    return bool(url) and not url.startswith(("http://", "https://"))
+
+
+@app.post("/api/context")
+def context():
+    body = request.get_json(silent=True) or {}
+    title = _clean(body, "title", 500)
+    summary = _clean(body, "summary", 2000)
+    url = _clean(body, "url", 2000)
+    article_text = _clean(body, "text", 40000)
+
+    if not title and not article_text:
+        return jsonify({"error": "Provide a headline or the article text."}), 400
+    if _bad_url(url):
+        return jsonify({"error": "The URL must start with http:// or https://"}), 400
+    if not title:
+        title = article_text.split("\n", 1)[0][:200]
+
+    return _stream(
+        lambda: generate_context(title, summary, url, article_text),
+        _briefings,
+        (title, url, article_text),
+        "Reading up on the story…",
+        "Briefing",
+    )
+
+
+@app.post("/api/source")
+def source_guide():
+    body = request.get_json(silent=True) or {}
+    title = _clean(body, "title", 500)
+    url = _clean(body, "url", 2000)
+    text = _clean(body, "text", 60000)
+    story_title = _clean(body, "story_title", 500)
+
+    if not url and not text:
+        return jsonify({"error": "Provide a link to the source or paste its text."}), 400
+    if _bad_url(url):
+        return jsonify({"error": "The URL must start with http:// or https://"}), 400
+
+    return _stream(
+        lambda: generate_source_guide(title, url, text, story_title),
+        _source_guides,
+        (url, text),
+        "Reading the source…",
+        "Source guide",
     )
 
 

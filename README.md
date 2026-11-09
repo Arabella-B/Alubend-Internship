@@ -12,6 +12,11 @@ your own. Claude reads the article, checks recent developments with web search, 
 - the main perspectives of the people involved
 - key terms, questions to watch, and sources
 
+**Reading guides** help you understand historical sources the way a historian would. Click "Reading guide" next to
+any source in a briefing, or paste a link or document into "Read a historical source". The guide explains who
+produced the source, when and why, what it says in plain words, its key passages and difficult terms, whose
+perspective it represents and whose is missing, how far to trust it, and how other groups saw the same events.
+
 ## Setup
 
 You need Python 3.9+ and an [Anthropic API key](https://platform.claude.com/).
@@ -56,8 +61,8 @@ Or set it up by hand with **New → Web Service**:
 | File | Role |
 | --- | --- |
 | `feeds.py` | Fetches and caches headlines from public RSS feeds |
-| `historian.py` | Calls Claude with web fetch and web search, and collects the briefing through a strict `present_context` tool schema |
-| `app.py` | Flask server: serves the page, `/api/headlines`, and `/api/context` (streams progress as server-sent events) |
+| `historian.py` | Calls Claude with web fetch and web search; briefings and reading guides come back through strict tool schemas |
+| `app.py` | Flask server: serves the page, `/api/headlines`, `/api/context` and `/api/source` (streamed as server-sent events) |
 | `templates/`, `static/` | The web interface |
 
 Each briefing typically costs roughly $0.10–0.40 in API usage with the default model and effort, including web searches. Briefings are cached in memory while the server

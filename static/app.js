@@ -75,27 +75,34 @@ function renderHeadlines() {
 
 // ---------- Context request ----------
 
+const VIEWS = ["empty", "loading", "error", "briefing", "guide"];
+let currentBriefingTitle = "";
+
 function show(view) {
-  for (const id of ["empty", "loading", "error", "briefing"]) $(id).hidden = id !== view;
+  for (const id of VIEWS) $(id).hidden = id !== view;
+  $("back-to-briefing").hidden = view === "briefing" || !currentBriefingTitle;
 }
 
 function setBusy(value) {
   busy = value;
-  document.querySelectorAll(".headline, #custom-form button").forEach((b) => (b.disabled = value));
+  document
+    .querySelectorAll(".headline, #custom-form button, #source-form button, .guide-button")
+    .forEach((b) => (b.disabled = value));
 }
 
-async function requestContext(story) {
+// Runs a streamed Claude job, showing progress, and passes the result to `onResult`.
+async function runJob(endpoint, body, loadingLabel, onResult) {
   if (busy) return;
   setBusy(true);
-  $("loading-story").textContent = `“${story.title || "your story"}”`;
+  $("loading-label").textContent = loadingLabel;
   $("progress").replaceChildren();
   show("loading");
 
   try {
-    const res = await fetch("/api/context", {
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(story),
+      body: JSON.stringify(body),
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
@@ -119,20 +126,29 @@ async function requestContext(story) {
         if (event.type === "status") {
           $("progress").append(el("li", {}, event.message));
         } else if (event.type === "result") {
-          renderBriefing(event.context);
+          onResult(event.data);
           finished = true;
         } else if (event.type === "error") {
           throw new Error(event.message);
         }
       }
     }
-    if (!finished) throw new Error("The connection closed before the briefing was ready.");
+    if (!finished) throw new Error("The connection closed before the result was ready.");
   } catch (err) {
     $("error").textContent = err.message || String(err);
     show("error");
   } finally {
     setBusy(false);
   }
+}
+
+function requestContext(story) {
+  runJob("/api/context", story, `Researching “${story.title || "your story"}”`, renderBriefing);
+}
+
+function requestSourceGuide(source) {
+  const label = `Reading “${source.title || source.url || "your source"}”`;
+  runJob("/api/source", { ...source, story_title: currentBriefingTitle }, label, renderGuide);
 }
 
 // ---------- Rendering ----------
@@ -147,6 +163,7 @@ function safeUrl(url) {
 }
 
 function renderBriefing(c) {
+  currentBriefingTitle = c.story_title;
   $("b-title").textContent = c.story_title;
   $("b-current").textContent = c.current_situation;
   $("b-why").textContent = c.why_it_matters;
@@ -208,7 +225,8 @@ function renderBriefing(c) {
         "li",
         {},
         s.kind ? el("span", { class: `kind kind-${s.kind}` }, s.kind) : null,
-        href ? el("a", { href, target: "_blank", rel: "noopener noreferrer" }, s.title || href) : s.title
+        href ? el("a", { href, target: "_blank", rel: "noopener noreferrer" }, s.title || href) : s.title,
+        href ? guideButton({ title: s.title, url: href }) : null
       );
     })
   );
@@ -217,7 +235,70 @@ function renderBriefing(c) {
   document.querySelector(".content").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function guideButton(source) {
+  const button = el("button", { type: "button", class: "guide-button" }, "Reading guide");
+  button.addEventListener("click", () => requestSourceGuide(source));
+  return button;
+}
+
+function section(title, ...content) {
+  const items = content.filter((c) => c != null && !(Array.isArray(c) && !c.length));
+  if (!items.length) return null;
+  return el("section", {}, el("h3", { class: "section" }, title), ...items.flat());
+}
+
+function renderGuide(g) {
+  const passages = g.key_passages.map((p) =>
+    el("li", {}, el("blockquote", {}, `“${p.passage}”`), el("p", {}, p.meaning))
+  );
+  const terms = g.difficult_terms.map((t) => el("div", {}, el("dt", {}, t.term), el("dd", {}, t.explanation)));
+  const views = g.other_viewpoints.flatMap((v) => [el("dt", {}, v.group), el("dd", {}, v.view)]);
+  const reading = g.further_reading.map((r) => {
+    const href = safeUrl(r.url);
+    return el(
+      "li",
+      {},
+      href ? el("a", { href, target: "_blank", rel: "noopener noreferrer" }, r.title || href) : r.title
+    );
+  });
+
+  $("guide-body").replaceChildren(
+    el("p", { class: "kicker" }, `Reading guide · ${g.source_type} source`),
+    el("h2", {}, g.title),
+    el("p", { class: "byline" }, [g.author, g.date].filter(Boolean).join(" · ")),
+    el("div", { class: "lede single" }, el("div", {}, el("h3", {}, "In plain words"), el("p", {}, g.plain_summary))),
+    section("Context", el("p", { class: "prose-p" }, g.context)),
+    section("Author and purpose", el("p", { class: "prose-p" }, g.author_and_purpose)),
+    section("Perspective", el("p", { class: "prose-p" }, g.perspective)),
+    section("Key passages", passages.length ? el("ul", { class: "passages" }, ...passages) : null),
+    section("Difficult terms", terms.length ? el("dl", { class: "pairs terms" }, ...terms) : null),
+    section("How far to trust it", el("p", { class: "prose-p" }, g.reliability)),
+    section("Other viewpoints", views.length ? el("dl", { class: "pairs" }, ...views) : null),
+    section(
+      "Questions to ask",
+      g.questions_to_ask.length ? el("ul", { class: "questions" }, ...g.questions_to_ask.map((q) => el("li", {}, q))) : null
+    ),
+    section("Further reading", reading.length ? el("ul", { class: "sources" }, ...reading) : null),
+    el("p", { class: "disclaimer" }, "Generated by Claude. Check important details against the source itself.")
+  );
+  show("guide");
+  document.querySelector(".content").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 // ---------- Wiring ----------
+
+$("back-to-briefing").addEventListener("click", () => show("briefing"));
+$("source-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const form = new FormData(event.target);
+  const source = { url: form.get("url").trim(), text: form.get("text").trim() };
+  if (!source.url && !source.text) {
+    $("error").textContent = "Enter a link to the source or paste its text.";
+    show("error");
+    return;
+  }
+  requestSourceGuide(source);
+});
 
 $("source-filter").addEventListener("change", renderHeadlines);
 $("search").addEventListener("input", renderHeadlines);

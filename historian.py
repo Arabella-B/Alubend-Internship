@@ -52,6 +52,8 @@ recent developments, since the story may be newer than your training data.
 (journal articles, university press books, university and research-institute pages) and \
 look especially for historians and writers from the countries and communities involved. \
 Where they help, include primary sources and first-hand accounts from the people affected.
+- Read every source critically: consider who produced it, when, for whom and why, and \
+check its claims against other sources before relying on it.
 - Keep the focus on history. Describe the current events only briefly, as the starting point.
 - Be even-handed on contested topics: present each major perspective in terms its own \
 holders would recognise, and separate established fact from interpretation.
@@ -242,19 +244,147 @@ def _describe_tool_call(block) -> Optional[str]:
     return None
 
 
-def generate_context(
-    title: str, summary: str = "", url: str = "", article_text: str = ""
-) -> Iterator[dict]:
-    """Yield progress events, ending with {"type": "result"} or {"type": "error"}."""
+
+
+# ---------------------------------------------------------------------------
+# Source reading guides: help readers understand a historical source.
+# ---------------------------------------------------------------------------
+
+SOURCE_SYSTEM_PROMPT = """You are a historian who teaches people to read historical sources \
+critically. Given a source (a document, speech, treaty, letter, article, book or web page), \
+write a reading guide that helps a general reader understand it the way a historian would.
+
+Use the historian's core methods:
+- Sourcing: who produced it, when, where, for what audience and for what purpose.
+- Contextualisation: what was happening at the time, and what the author could and couldn't know.
+- Close reading: what it actually says, in plain modern language, including its word choices and tone.
+- Perspective: whose viewpoint it represents, what it emphasises or leaves out, and whose voices are missing.
+- Corroboration: how it fits with, or contradicts, other evidence and the accounts of other groups involved.
+
+How to work:
+- If a URL is given, read the source with web_fetch. Use web_search to find out about the \
+author, the circumstances of its production, and how historians, including historians from \
+the communities it describes, have interpreted it.
+- Apply the same scrutiny to every source, whoever produced it. Official and Western sources \
+are not neutral by default.
+- Keep quotations short (under 25 words each) and only quote what you need to explain.
+- If you can't read the source itself, say so plainly in the summary and base the guide on \
+what you can establish about it.
+
+When you are finished, call the present_source_guide tool exactly once. Do not write the \
+guide as plain text."""
+
+
+def _obj(properties: dict, **extra) -> dict:
+    """A strict JSON-schema object: every property required, no extras."""
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": list(properties),
+        "properties": properties,
+        **extra,
+    }
+
+
+_TEXT = {"type": "string"}
+
+PRESENT_SOURCE_GUIDE_TOOL = {
+    "name": "present_source_guide",
+    "description": "Deliver the finished reading guide for the historical source. "
+    "Call this once, at the end, with every field filled in.",
+    "strict": True,
+    "input_schema": _obj(
+        {
+            "title": {"type": "string", "description": "The source's title."},
+            "author": {"type": "string", "description": "Who produced it, or 'Unknown'."},
+            "date": {"type": "string", "description": "When it was produced, as precisely as known."},
+            "source_type": {
+                "type": "string",
+                "enum": ["primary", "secondary", "tertiary"],
+                "description": "Primary: produced at the time by participants or witnesses. "
+                "Secondary: later analysis. Tertiary: summaries such as encyclopaedias.",
+            },
+            "plain_summary": {"type": "string", "description": "What it says, in 2-4 plain sentences."},
+            "context": {"type": "string", "description": "What was happening when it was produced."},
+            "author_and_purpose": {
+                "type": "string",
+                "description": "Who the author was, their position, intended audience and purpose.",
+            },
+            "perspective": {
+                "type": "string",
+                "description": "Whose viewpoint it represents, what it emphasises or omits, "
+                "and whose voices are missing.",
+            },
+            "key_passages": {
+                "type": "array",
+                "description": "2-5 important short passages and what they mean.",
+                "items": _obj({"passage": {"type": "string", "description": "Under 25 words."}, "meaning": _TEXT}),
+            },
+            "difficult_terms": {
+                "type": "array",
+                "description": "Archaic, technical or loaded words a modern reader may misread.",
+                "items": _obj({"term": _TEXT, "explanation": _TEXT}),
+            },
+            "reliability": {
+                "type": "string",
+                "description": "What this source is and isn't good evidence for, and how it "
+                "fits with other evidence.",
+            },
+            "other_viewpoints": {
+                "type": "array",
+                "description": "How other groups involved saw the same events.",
+                "items": _obj({"group": _TEXT, "view": _TEXT}),
+            },
+            "questions_to_ask": {
+                "type": "array",
+                "description": "2-4 questions a reader should keep in mind.",
+                "items": _TEXT,
+            },
+            "further_reading": {
+                "type": "array",
+                "description": "Sources that help interpret this one, ideally academic.",
+                "items": _obj({"title": _TEXT, "url": _TEXT}),
+            },
+        }
+    ),
+}
+
+SOURCE_TOOLS = [
+    {"type": "web_fetch_20260209", "name": "web_fetch", "max_uses": 4},
+    {"type": "web_search_20260209", "name": "web_search", "max_uses": 6},
+    PRESENT_SOURCE_GUIDE_TOOL,
+]
+
+
+def _build_source_request(title: str, url: str, text: str, story_title: str) -> str:
+    parts = ["Write a reading guide for this historical source."]
+    if title:
+        parts.append(f"Title: {title}")
+    if url:
+        parts.append(f"URL: {url}")
+    if story_title:
+        parts.append(f"The reader found it while reading about: {story_title}")
+    if text:
+        parts += ["", "Source text:", "<source>", text, "</source>"]
+    return "\n".join(parts)
+
+
+# ---------------------------------------------------------------------------
+# Shared request loop
+# ---------------------------------------------------------------------------
+
+
+def _run(system: str, tools: list, result_tool: str, request: str, what: str) -> Iterator[dict]:
+    """Run Claude until it calls `result_tool`; yield status events, then a result or error."""
     client = _get_client()
-    messages: list = [{"role": "user", "content": _build_request(title, summary, url, article_text)}]
+    messages: list = [{"role": "user", "content": request}]
 
     for _ in range(MAX_ROUNDS):
         with client.beta.messages.stream(
             model=MODEL,
             max_tokens=32000,
-            system=SYSTEM_PROMPT,
-            tools=TOOLS,
+            system=system,
+            tools=tools,
             messages=messages,
             thinking={"type": "adaptive"},
             output_config={"effort": EFFORT},
@@ -272,23 +402,37 @@ def generate_context(
             message = stream.get_final_message()
 
         if message.stop_reason == "refusal":
-            yield {"type": "error", "message": "Claude declined to provide context for this story."}
+            yield {"type": "error", "message": f"Claude declined to write the {what}."}
             return
         if message.stop_reason == "max_tokens":
             yield {"type": "error", "message": "The response was too long and got cut off. Please try again."}
             return
 
         for block in message.content:
-            if block.type == "tool_use" and block.name == "present_context":
-                yield {"type": "result", "context": block.input}
+            if block.type == "tool_use" and block.name == result_tool:
+                yield {"type": "result", "data": block.input}
                 return
 
         # Server tools paused mid-turn, or Claude answered in prose: continue the same turn.
         messages.append({"role": "assistant", "content": message.content})
         if message.stop_reason != "pause_turn":
-            messages.append(
-                {"role": "user", "content": "Please deliver the briefing by calling the present_context tool."}
-            )
-        yield {"type": "status", "message": "Writing the briefing…"}
+            messages.append({"role": "user", "content": f"Please deliver the {what} by calling the {result_tool} tool."})
+        yield {"type": "status", "message": f"Writing the {what}…"}
 
-    yield {"type": "error", "message": "Claude did not finish the briefing. Please try again."}
+    yield {"type": "error", "message": f"Claude did not finish the {what}. Please try again."}
+
+
+def generate_context(
+    title: str, summary: str = "", url: str = "", article_text: str = ""
+) -> Iterator[dict]:
+    """Historical-context briefing for a news story."""
+    request = _build_request(title, summary, url, article_text)
+    return _run(SYSTEM_PROMPT, TOOLS, "present_context", request, "briefing")
+
+
+def generate_source_guide(
+    title: str = "", url: str = "", text: str = "", story_title: str = ""
+) -> Iterator[dict]:
+    """Reading guide that explains a historical source critically."""
+    request = _build_source_request(title, url, text, story_title)
+    return _run(SOURCE_SYSTEM_PROMPT, SOURCE_TOOLS, "present_source_guide", request, "reading guide")

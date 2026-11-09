@@ -237,6 +237,34 @@ h3.section { font-size: 21px; margin: 32px 0 12px; }
 }
 .kind-academic { color: var(--accent); border-color: var(--accent); }
 
+.panel-intro { margin: -6px 0 12px; }
+.back { margin-bottom: 16px; }
+.guide-button {
+  margin-left: 8px;
+  background: none;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 12px;
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+.guide-button:hover { background: var(--accent-soft); }
+.byline { color: var(--muted); margin: -12px 0 16px; }
+.lede.single { grid-template-columns: 1fr; }
+.prose-p { margin: 0; }
+.passages { list-style: none; padding: 0; margin: 0; }
+.passages li { margin-bottom: 14px; }
+.passages blockquote {
+  margin: 0 0 4px;
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
+  font-family: var(--serif);
+  font-size: 17px;
+  font-style: italic;
+}
+.passages p { margin: 0; color: var(--muted); }
+#guide-body > h2 { font-size: 30px; line-height: 1.15; margin-bottom: 16px; }
+
 .disclaimer { margin-top: 32px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 12px; }
 
 @media (max-width: 860px) {
