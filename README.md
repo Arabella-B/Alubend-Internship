@@ -11,11 +11,20 @@ your own. Claude reads the article, checks recent developments with web search, 
 - historical parallels: how they're similar, how they differ
 - the main perspectives of the people involved
 - key terms, questions to watch, and sources
+- primary-source images placed beside the part of the story they illustrate
 
 **Reading guides** help you understand historical sources the way a historian would. Click "Reading guide" next to
 any source in a briefing, or paste a link or document into "Read a historical source". The guide explains who
 produced the source, when and why, what it says in plain words, its key passages and difficult terms, whose
 perspective it represents and whose is missing, how far to trust it, and how other groups saw the same events.
+
+**Images** are primary sources only: photographs of the events at the time, artifacts and documents from the
+period, political cartoons and posters, and maps or charts with real geographical or statistical information.
+Claude searches [Wikimedia Commons](https://commons.wikimedia.org/), which holds digitised collections from
+archives, libraries and museums, and judges each candidate from its catalogue record. Decorative, modern,
+recreated or poorly documented images are left out, and a briefing can have no images at all. Each image comes with
+what it shows, why it matters, a note on who made it and from what viewpoint, and its credit and licence. The app
+only shows files a search really returned, so image links can't be invented.
 
 ## Setup
 
@@ -63,6 +72,7 @@ Or set it up by hand with **New → Web Service**:
 | --- | --- |
 | `feeds.py` | Fetches and caches headlines from public RSS feeds |
 | `historian.py` | Calls Claude with web fetch and web search; briefings and reading guides come back through strict tool schemas |
+| `images.py` | The `find_images` tool: searches Wikimedia Commons and checks the images Claude picks |
 | `app.py` | Flask server: serves the page, `/api/headlines`, `/api/context` and `/api/source` (streamed as server-sent events) |
 | `templates/`, `static/` | The web interface |
 

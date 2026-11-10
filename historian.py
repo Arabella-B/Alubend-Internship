@@ -10,13 +10,16 @@ from __future__ import annotations
 import logging
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor
 from typing import Iterator, Optional
 
 import anthropic
 
+from images import FIND_IMAGES_TOOL, ImageResearch
+
 MODEL = os.environ.get("CONTEXT_MODEL", "claude-opus-5-5")
 EFFORT = os.environ.get("CONTEXT_EFFORT", "medium")  # low | medium | high | xhigh | max
-MAX_ROUNDS = 6
+MAX_ROUNDS = 10  # image searches add a few short round trips
 # Fast mode: same model and quality, up to ~2.5x faster output, at twice the per-token price.
 FAST_MODE = os.environ.get("FAST_MODE", "1") != "0"
 _fast_supported = True  # switched off if the API rejects fast mode for this account
@@ -70,6 +73,32 @@ so rather than guessing.
 - Work efficiently: when you need several searches or pages, request them together in the \
 same step rather than one at a time, and don't repeat a search you have already run.
 
+Illustrate the briefing with primary sources, chosen as critically as your written sources:
+- Use find_images, requesting several searches at once alongside your other research. \
+Search for specific items: events, places, years and kinds of object.
+- An image qualifies only if it is one of: a photograph of the events, people or places at \
+the time; an artifact or document from the period (a treaty page, banknote, leaflet, \
+poster, newspaper front page); a political cartoon or piece of propaganda from the time; or \
+a map, chart or diagram that carries real geographical or statistical information (a \
+historical map from the period, or a well-sourced map of borders, territory, resources or \
+population).
+- Leave out anything decorative, generic or modern: flags, seals, logos, present-day \
+tourist or museum photos, recreations, artwork made long after the event, uncredited \
+fan-made maps, and portraits of people who are not central to the story or that don't date \
+from the period. Leave out anything whose origin, date or subject you can't establish from \
+its metadata. Commons dates are sometimes the upload or scan date, not the date the item was \
+made, so check the description and categories.
+- Each image must help the reader understand something specific in the briefing. Two to \
+five strong images are better than more; use none if nothing qualifies.
+- Prefer images that show the experience of the people the history happened to, not only \
+leaders and officials, and don't let one side's photographers or mapmakers tell the whole \
+story.
+- Treat every image as a source. Photographs are framed by who took them and why (a \
+government or military photographer, a newspaper with a political line, a foreign \
+correspondent), cartoons and posters argue a position, and maps encode the claims of \
+whoever drew them. Say so for each image.
+- Refer to each image by its exact file name from the find_images results.
+
 When you are finished, call the present_context tool exactly once with the full briefing. \
 Do not write the briefing as plain text."""
 
@@ -93,6 +122,7 @@ PRESENT_CONTEXT_TOOL = {
             "key_terms",
             "open_questions",
             "sources",
+            "images",
         ],
         "properties": {
             "story_title": {"type": "string", "description": "A short, neutral title for the story."},
@@ -213,6 +243,46 @@ PRESENT_CONTEXT_TOOL = {
                     },
                 },
             },
+            "images": {
+                "type": "array",
+                "description": "0-6 primary-source images from find_images that help explain the "
+                "history. An empty list is better than a weak or decorative image.",
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": [
+                        "file", "kind", "placement", "anchor", "caption", "alt",
+                        "why_relevant", "read_critically",
+                    ],
+                    "properties": {
+                        "file": {"type": "string", "description": "Exact file name from find_images, e.g. 'File:Example.jpg'."},
+                        "kind": {
+                            "type": "string",
+                            "enum": ["photograph", "artifact", "document", "cartoon", "poster", "map", "chart"],
+                        },
+                        "placement": {
+                            "type": "string",
+                            "enum": ["top", "background", "timeline", "perspectives", "contested"],
+                            "description": "The section the image illustrates.",
+                        },
+                        "anchor": {
+                            "type": "integer",
+                            "description": "For background: the paragraph (1-based) it should follow. For "
+                            "timeline: the entry (1-based) it belongs to. Otherwise 0.",
+                        },
+                        "caption": {"type": "string", "description": "What it shows: who, what, where and when."},
+                        "alt": {"type": "string", "description": "Alt text describing the image for screen readers."},
+                        "why_relevant": {
+                            "type": "string",
+                            "description": "One or two sentences on what it helps the reader understand.",
+                        },
+                        "read_critically": {
+                            "type": "string",
+                            "description": "Who made it, for whom and why; whose viewpoint it shows and what it leaves out.",
+                        },
+                    },
+                },
+            },
         },
     },
 }
@@ -220,6 +290,7 @@ PRESENT_CONTEXT_TOOL = {
 TOOLS = [
     {"type": "web_fetch_20260209", "name": "web_fetch", "max_uses": 6},
     {"type": "web_search_20260209", "name": "web_search", "max_uses": 10},
+    FIND_IMAGES_TOOL,
     PRESENT_CONTEXT_TOOL,
 ]
 
@@ -250,6 +321,8 @@ def _describe_tool_call(block) -> Optional[str]:
         return f"Searching: {tool_input['query']}"
     if block.name == "web_fetch" and tool_input.get("url"):
         return f"Reading: {tool_input['url']}"
+    if block.name == "find_images" and tool_input.get("query"):
+        return f"Looking for images: {tool_input['query']}"
     return None
 
 
@@ -409,10 +482,54 @@ def _stream_round(client, system: str, tools: list, messages: list, fast: bool):
     )
 
 
-def _run(system: str, tools: list, result_tool: str, request: str, what: str) -> Iterator[dict]:
-    """Run Claude until it calls `result_tool`; yield status events, then a result or error."""
+def _consume(stream, result_tool: str, what: str) -> Iterator[dict]:
+    """Turn a stream's events into progress updates for the browser."""
+    for event in stream:
+        if event.type == "content_block_start" and event.content_block.type == "tool_use":
+            if event.content_block.name == result_tool:
+                yield {"type": "status", "stage": "writing", "message": f"Writing the {what}…"}
+        elif event.type == "content_block_stop":
+            block = stream.current_message_snapshot.content[event.index]
+            if block.type in ("server_tool_use", "tool_use"):
+                note = _describe_tool_call(block)
+                if note:
+                    yield {"type": "status", "stage": "research", "message": note}
+
+
+def _run_client_tools(calls: list, handlers: dict) -> list:
+    """Run the app's own tools (in parallel) and return their tool_result blocks."""
+
+    def run(block):
+        handler = handlers.get(block.name)
+        if handler is None:
+            return block.id, f"Unknown tool {block.name}.", True
+        content, is_error = handler(block.input if isinstance(block.input, dict) else {})
+        return block.id, content, is_error
+
+    with ThreadPoolExecutor(max_workers=min(len(calls), 6)) as pool:
+        outcomes = list(pool.map(run, calls))
+    return [
+        {"type": "tool_result", "tool_use_id": tool_id, "content": content, "is_error": is_error}
+        for tool_id, content, is_error in outcomes
+    ]
+
+
+def _run(
+    system: str,
+    tools: list,
+    result_tool: str,
+    request: str,
+    what: str,
+    handlers: Optional[dict] = None,
+) -> Iterator[dict]:
+    """Run Claude until it calls `result_tool`; yield status events, then a result or error.
+
+    `handlers` maps the names of the app's own tools (such as find_images) to functions
+    that take the tool input and return (content, is_error).
+    """
     global _fast_supported
     client = _get_client()
+    handlers = handlers or {}
     messages: list = [{"role": "user", "content": request}]
     started = time.monotonic()
 
@@ -420,15 +537,7 @@ def _run(system: str, tools: list, result_tool: str, request: str, what: str) ->
         fast = FAST_MODE and _fast_supported
         try:
             with _stream_round(client, system, tools, messages, fast) as stream:
-                for event in stream:
-                    if event.type == "content_block_start" and event.content_block.type == "tool_use":
-                        yield {"type": "status", "stage": "writing", "message": f"Writing the {what}…"}
-                    elif event.type == "content_block_stop":
-                        block = stream.current_message_snapshot.content[event.index]
-                        if block.type == "server_tool_use":
-                            note = _describe_tool_call(block)
-                            if note:
-                                yield {"type": "status", "stage": "research", "message": note}
+                yield from _consume(stream, result_tool, what)
                 message = stream.get_final_message()
         except (anthropic.BadRequestError, anthropic.PermissionDeniedError, anthropic.RateLimitError) as exc:
             if not fast:
@@ -438,13 +547,7 @@ def _run(system: str, tools: list, result_tool: str, request: str, what: str) ->
                 _fast_supported = False
             log.warning("Fast mode unavailable (%s); retrying at standard speed", exc.__class__.__name__)
             with _stream_round(client, system, tools, messages, False) as stream:
-                for event in stream:
-                    if event.type == "content_block_stop":
-                        block = stream.current_message_snapshot.content[event.index]
-                        if block.type == "server_tool_use":
-                            note = _describe_tool_call(block)
-                            if note:
-                                yield {"type": "status", "stage": "research", "message": note}
+                yield from _consume(stream, result_tool, what)
                 message = stream.get_final_message()
 
         usage = message.usage
@@ -462,15 +565,21 @@ def _run(system: str, tools: list, result_tool: str, request: str, what: str) ->
             yield {"type": "error", "message": "The response was too long and got cut off. Please try again."}
             return
 
+        client_calls = []
         for block in message.content:
             if block.type == "tool_use" and block.name == result_tool:
                 yield {"type": "result", "data": block.input}
                 return
+            if block.type == "tool_use":
+                client_calls.append(block)
 
-        # Server tools paused mid-turn, or Claude answered in prose: continue the same turn.
         messages.append({"role": "assistant", "content": message.content})
-        if message.stop_reason != "pause_turn":
+        if client_calls:
+            messages.append({"role": "user", "content": _run_client_tools(client_calls, handlers)})
+        elif message.stop_reason != "pause_turn":
+            # Claude answered in prose instead of calling the result tool.
             messages.append({"role": "user", "content": f"Please deliver the {what} by calling the {result_tool} tool."})
+        # On pause_turn, the server tools paused mid-turn: send it back to continue.
 
     yield {"type": "error", "message": f"Claude did not finish the {what}. Please try again."}
 
@@ -480,7 +589,17 @@ def generate_context(
 ) -> Iterator[dict]:
     """Historical-context briefing for a news story."""
     request = _build_request(title, summary, url, article_text)
-    return _run(SYSTEM_PROMPT, TOOLS, "present_context", request, "briefing")
+    research = ImageResearch()
+    for event in _run(
+        SYSTEM_PROMPT, TOOLS, "present_context", request, "briefing",
+        handlers={"find_images": research.find_images},
+    ):
+        if event["type"] == "result":
+            data = dict(event["data"])
+            # Only show files a search really returned, with their real URLs and credits.
+            data["images"] = research.attach(data.get("images", []))
+            event = {"type": "result", "data": data}
+        yield event
 
 
 def generate_source_guide(

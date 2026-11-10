@@ -227,18 +227,99 @@ function safeUrl(url) {
   }
 }
 
+const WIDE_KINDS = new Set(["map", "chart", "document"]);
+
+// A primary-source image with its caption, relevance, critical reading and credit.
+function figure(image, size) {
+  const src = safeUrl(image.image_url);
+  if (!src) return null;
+  const page = safeUrl(image.page_url);
+  const credit = image.credit || {};
+  const creditBits = [credit.creator, credit.date, credit.source].filter(Boolean).join(" · ");
+  const licence = credit.licence
+    ? safeUrl(credit.licence_url)
+      ? el("a", { href: safeUrl(credit.licence_url), target: "_blank", rel: "noopener noreferrer" }, credit.licence)
+      : credit.licence
+    : null;
+
+  const img = el("img", { src, alt: image.alt || image.caption || "", loading: "lazy", decoding: "async" });
+  if (image.width && image.height) {
+    img.setAttribute("width", image.width);
+    img.setAttribute("height", image.height);
+  }
+  const node = el(
+    "figure",
+    { class: `figure figure-${size}` },
+    page ? el("a", { href: page, target: "_blank", rel: "noopener noreferrer", class: "figure-img" }, img) : img,
+    el(
+      "figcaption",
+      {},
+      el("p", { class: "figure-caption" }, el("span", { class: "kind" }, image.kind), image.caption),
+      image.why_relevant ? el("p", { class: "figure-why" }, image.why_relevant) : null,
+      image.read_critically
+        ? el("p", { class: "figure-critical" }, el("strong", {}, "Reading this image: "), image.read_critically)
+        : null,
+      el(
+        "p",
+        { class: "figure-credit" },
+        creditBits ? `${creditBits}. ` : "",
+        licence,
+        licence ? " · " : "",
+        page ? el("a", { href: page, target: "_blank", rel: "noopener noreferrer" }, "Wikimedia Commons") : null,
+        page ? guideButton({ title: image.caption, url: page }) : null
+      )
+    )
+  );
+  img.addEventListener("error", () => node.remove());
+  return node;
+}
+
+function figuresFor(images, placement, size) {
+  return images
+    .filter((image) => image.placement === placement)
+    .map((image) => figure(image, size))
+    .filter(Boolean);
+}
+
 function renderBriefing(c) {
   currentBriefingTitle = c.story_title;
   $("b-title").textContent = c.story_title;
   $("b-current").textContent = c.current_situation;
   $("b-why").textContent = c.why_it_matters;
 
+  const images = c.images || [];
+  $("b-figures-top").replaceChildren(...figuresFor(images, "top", "wide"));
+  $("b-figures-perspectives").replaceChildren(...figuresFor(images, "perspectives", "wide"));
+  $("b-figures-contested").replaceChildren(...figuresFor(images, "contested", "wide"));
+
+  // Background images follow the paragraph they illustrate; maps and charts run full width.
+  const paragraphs = c.background.split(/\n\s*\n/).filter((p) => p.trim());
+  const afterParagraph = (image) => Math.min(Math.max(image.anchor || 1, 1), paragraphs.length);
+  const backgroundImages = images.filter((image) => image.placement === "background");
   $("b-background").replaceChildren(
-    ...c.background.split(/\n\s*\n/).filter((p) => p.trim()).map((p) => el("p", {}, p.trim()))
+    ...paragraphs.flatMap((p, i) => [
+      ...backgroundImages
+        .filter((image) => afterParagraph(image) === i + 1 && !WIDE_KINDS.has(image.kind))
+        .map((image) => figure(image, "side")),
+      el("p", {}, p.trim()),
+      ...backgroundImages
+        .filter((image) => afterParagraph(image) === i + 1 && WIDE_KINDS.has(image.kind))
+        .map((image) => figure(image, "wide")),
+    ].filter(Boolean))
   );
 
+  const timelineImages = images.filter((image) => image.placement === "timeline");
+  const entryFor = (image) => Math.min(Math.max(image.anchor || 1, 1), c.timeline.length);
   $("b-timeline").replaceChildren(
-    ...c.timeline.map((t) => el("li", {}, el("span", { class: "date" }, t.date), t.event))
+    ...c.timeline.map((t, i) =>
+      el(
+        "li",
+        {},
+        el("span", { class: "date" }, t.date),
+        t.event,
+        ...timelineImages.filter((image) => entryFor(image) === i + 1).map((image) => figure(image, "inline"))
+      )
+    )
   );
 
   $("b-parallels").replaceChildren(
