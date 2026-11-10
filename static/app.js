@@ -1,6 +1,8 @@
 "use strict";
 
 const $ = (id) => document.getElementById(id);
+// The age group this page is for (11-13, 13-17 or 18-plus); it shapes the news and the writing.
+const AUDIENCE = document.body.dataset.audience || "18-plus";
 let headlines = [];
 let busy = false;
 
@@ -31,7 +33,7 @@ async function loadHeadlines(refresh = false) {
   const list = $("headlines");
   list.replaceChildren(el("li", { class: "muted" }, "Loading headlines…"));
   try {
-    const res = await fetch(`/api/headlines${refresh ? "?refresh=1" : ""}`);
+    const res = await fetch(`/api/headlines?audience=${encodeURIComponent(AUDIENCE)}${refresh ? "&refresh=1" : ""}`);
     headlines = await res.json();
   } catch {
     headlines = [];
@@ -87,7 +89,7 @@ function formatDuration(seconds) {
 
 function recentDurations(kind) {
   try {
-    return JSON.parse(localStorage.getItem(`durations:${kind}`) || "[]");
+    return JSON.parse(localStorage.getItem(`durations:${AUDIENCE}:${kind}`) || "[]");
   } catch {
     return [];
   }
@@ -96,7 +98,7 @@ function recentDurations(kind) {
 function recordDuration(kind, seconds) {
   try {
     const list = [...recentDurations(kind), seconds].slice(-8);
-    localStorage.setItem(`durations:${kind}`, JSON.stringify(list));
+    localStorage.setItem(`durations:${AUDIENCE}:${kind}`, JSON.stringify(list));
   } catch {
     /* storage unavailable: estimates just won't be shown */
   }
@@ -163,7 +165,7 @@ async function runJob(endpoint, body, loadingLabel, onResult) {
     const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ ...body, audience: AUDIENCE }),
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));

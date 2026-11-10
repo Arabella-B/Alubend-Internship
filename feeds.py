@@ -14,18 +14,16 @@ from typing import Dict, List, Optional
 
 import certifi
 
-FEEDS: Dict[str, str] = {
-    "BBC News": "https://feeds.bbci.co.uk/news/world/rss.xml",
-    "NPR": "https://feeds.npr.org/1001/rss.xml",
-    "The Guardian": "https://www.theguardian.com/world/rss",
-    "Al Jazeera": "https://www.aljazeera.com/xml/rss/all.xml",
-}
+import audiences
 
 CACHE_SECONDS = 600
 MAX_PER_FEED = 15
+# Newsround lists many videos first, so read further down the feed before filtering.
+SCAN_PER_FEED = 60
 
 _ssl_context = ssl.create_default_context(cafile=certifi.where())
-_cache: Dict[str, object] = {"time": 0.0, "items": []}
+# Per feed URL: (time fetched, items). Age groups that share feeds share the cache.
+_cache: Dict[str, tuple] = {}
 
 _TAG_RE = re.compile(r"<[^>]+>")
 
@@ -70,22 +68,30 @@ def _fetch_feed(source: str, url: str) -> List[dict]:
                 "timestamp": _timestamp(pub_date),
             }
         )
-        if len(items) >= MAX_PER_FEED:
+        if len(items) >= SCAN_PER_FEED:
             break
     return items
 
 
-def get_headlines(force: bool = False) -> List[dict]:
-    """Return recent headlines from all feeds, newest first (cached for 10 minutes)."""
-    if not force and _cache["items"] and time.time() - float(_cache["time"]) < CACHE_SECONDS:
-        return list(_cache["items"])  # type: ignore[arg-type]
-
-    with ThreadPoolExecutor(max_workers=len(FEEDS)) as pool:
-        results = pool.map(lambda kv: _fetch_feed(*kv), FEEDS.items())
-    items = [item for feed_items in results for item in feed_items]
-    items.sort(key=lambda i: i["timestamp"], reverse=True)
-
+def _feed(source: str, url: str, force: bool) -> List[dict]:
+    cached = _cache.get(url)
+    if not force and cached and time.time() - cached[0] < CACHE_SECONDS:
+        return cached[1]
+    items = _fetch_feed(source, url)
     if items:
-        _cache["time"] = time.time()
-        _cache["items"] = items
+        _cache[url] = (time.time(), items)
+    elif cached:
+        items = cached[1]  # keep showing the last good copy if a feed is briefly down
+    return items
+
+
+def get_headlines(audience: str = audiences.DEFAULT, force: bool = False) -> List[dict]:
+    """Recent headlines for an age group, newest first (each feed cached for 10 minutes)."""
+    feeds = audiences.get(audience)["feeds"]
+    with ThreadPoolExecutor(max_workers=len(feeds)) as pool:
+        results = pool.map(lambda kv: _feed(kv[0], kv[1], force), feeds.items())
+    items = []
+    for feed_items in results:
+        items += [item for item in feed_items if audiences.suitable(item, audience)][:MAX_PER_FEED]
+    items.sort(key=lambda i: i["timestamp"], reverse=True)
     return items

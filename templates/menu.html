@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Then &amp; Now</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="masthead">
+    <div>
+      <h1>Then &amp; Now</h1>
+      <p class="tagline">The history behind today's headlines</p>
+    </div>
+  </header>
+
+  <main class="menu">
+    <h2>Choose your age group</h2>
+    <p class="muted">Each version follows the same process: pick a story, and get its history from more than one
+      side, with sources and primary-source images. The news and the language suit each age.</p>
+    <nav class="age-options" aria-label="Age groups">
+      {% for key, group in audiences.items() %}
+      <a class="age-option" href="{{ url_for('reader', audience=key) }}">
+        <span class="age-label">{{ group.label }}</span>
+        <span class="age-blurb">{{ group.blurb }}</span>
+        <span class="age-sources muted small">News from {{ group.feeds.keys() | join(', ') }}</span>
+      </a>
+      {% endfor %}
+    </nav>
+  </main>
+</body>
+</html>

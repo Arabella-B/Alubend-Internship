@@ -15,6 +15,7 @@ from typing import Iterator, Optional
 
 import anthropic
 
+import audiences
 from images import FIND_IMAGES_TOOL, ImageResearch
 
 MODEL = os.environ.get("CONTEXT_MODEL", "claude-opus-5-5")
@@ -584,14 +585,24 @@ def _run(
     yield {"type": "error", "message": f"Claude did not finish the {what}. Please try again."}
 
 
+def _for_audience(system: str, audience: str) -> str:
+    """Add the age group's writing guidance to a system prompt."""
+    guidance = audiences.get(audience)["guidance"]
+    return f"{system}\n\nWho you are writing for:\n{guidance}" if guidance else system
+
+
 def generate_context(
-    title: str, summary: str = "", url: str = "", article_text: str = ""
+    title: str,
+    summary: str = "",
+    url: str = "",
+    article_text: str = "",
+    audience: str = audiences.DEFAULT,
 ) -> Iterator[dict]:
     """Historical-context briefing for a news story."""
     request = _build_request(title, summary, url, article_text)
     research = ImageResearch()
     for event in _run(
-        SYSTEM_PROMPT, TOOLS, "present_context", request, "briefing",
+        _for_audience(SYSTEM_PROMPT, audience), TOOLS, "present_context", request, "briefing",
         handlers={"find_images": research.find_images},
     ):
         if event["type"] == "result":
@@ -603,8 +614,12 @@ def generate_context(
 
 
 def generate_source_guide(
-    title: str = "", url: str = "", text: str = "", story_title: str = ""
+    title: str = "",
+    url: str = "",
+    text: str = "",
+    story_title: str = "",
+    audience: str = audiences.DEFAULT,
 ) -> Iterator[dict]:
     """Reading guide that explains a historical source critically."""
     request = _build_source_request(title, url, text, story_title)
-    return _run(SOURCE_SYSTEM_PROMPT, SOURCE_TOOLS, "present_source_guide", request, "reading guide")
+    return _run(_for_audience(SOURCE_SYSTEM_PROMPT, audience), SOURCE_TOOLS, "present_source_guide", request, "reading guide")

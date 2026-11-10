@@ -8,11 +8,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-  <header class="masthead">
+<body data-audience="{{ audience }}">
+  <header class="masthead masthead-row">
     <div>
-      <h1>Then &amp; Now</h1>
-      <p class="tagline">The history behind today's headlines</p>
+      <h1><a href="{{ url_for('menu') }}" class="home-link">Then &amp; Now</a></h1>
+      <p class="tagline">{{ settings.tagline }}</p>
+    </div>
+    <div class="age-switch">
+      <span class="age-badge">{{ settings.label }}</span>
+      <a href="{{ url_for('menu') }}" class="small">Change age group</a>
     </div>
   </header>
 

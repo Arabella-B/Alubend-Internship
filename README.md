@@ -26,6 +26,18 @@ recreated or poorly documented images are left out, and a briefing can have no i
 what it shows, why it matters, a note on who made it and from what viewpoint, and its credit and licence. The app
 only shows files a search really returned, so image links can't be invented.
 
+**Age groups.** The home page lets readers choose 11–13, 13–17 or 18+. Each version works the same way, with
+news and writing suited to that age:
+
+| Age group | Headlines | Writing |
+| --- | --- | --- |
+| 11–13 | BBC Newsround, Kiwi Kids News, Science News Explores, with stories about violent crime, sexual abuse and similar topics left out | Short sentences and everyday words, every name and idea explained, no graphic detail, shorter briefings, and no graphic images |
+| 13–17 | BBC, NPR, The Guardian, Al Jazeera, with stories about sexual abuse, suicide and similar topics left out | Clear language at secondary-school level, with how historians use evidence and disagree, and no graphic detail or images |
+| 18+ | BBC, NPR, The Guardian, Al Jazeera | The full briefing |
+
+Every age group keeps the same standards: deep roots, more than one side, and real sources. The age-group settings
+are in `audiences.py`.
+
 ## Setup
 
 You need Python 3.9+ and an [Anthropic API key](https://platform.claude.com/).
@@ -70,10 +82,11 @@ Or set it up by hand with **New → Web Service**:
 
 | File | Role |
 | --- | --- |
+| `audiences.py` | The age groups: their news feeds, headline filters and writing guidance |
 | `feeds.py` | Fetches and caches headlines from public RSS feeds |
 | `historian.py` | Calls Claude with web fetch and web search; briefings and reading guides come back through strict tool schemas |
 | `images.py` | The `find_images` tool: searches Wikimedia Commons and checks the images Claude picks |
-| `app.py` | Flask server: serves the page, `/api/headlines`, `/api/context` and `/api/source` (streamed as server-sent events) |
+| `app.py` | Flask server: serves the age-group menu (`/`), the pages `/11-13`, `/13-17` and `/18-plus`, `/api/headlines`, `/api/context` and `/api/source` (streamed as server-sent events) |
 | `templates/`, `static/` | The web interface |
 
 Each briefing typically costs roughly $0.20–0.80 in API usage with fast mode on (about half that with `FAST_MODE=0`), including web searches. Briefings are cached in memory while the server

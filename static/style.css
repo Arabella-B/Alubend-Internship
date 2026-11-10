@@ -47,6 +47,40 @@ h1, h2, h3 { font-family: var(--serif); margin: 0; }
 }
 .masthead h1 { font-size: 30px; letter-spacing: -0.01em; }
 .tagline { margin: 2px 0 0; color: var(--muted); }
+.masthead-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.home-link { color: inherit; text-decoration: none; }
+.age-switch { display: flex; align-items: center; gap: 12px; }
+.age-switch a { color: var(--accent); }
+.age-badge {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 3px 12px;
+  white-space: nowrap;
+}
+
+/* Age-group menu */
+.menu { max-width: 880px; margin: 0 auto; padding: 48px 24px; }
+.menu h2 { font-size: 28px; margin-bottom: 8px; }
+.menu > p { max-width: 620px; margin: 0 0 28px; }
+.age-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.age-option {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+}
+.age-option:hover, .age-option:focus-visible { border-color: var(--accent); background: var(--accent-soft); }
+.age-label { font-family: var(--serif); font-size: 24px; font-weight: 700; color: var(--accent); }
+.age-blurb { font-size: 15px; }
+.age-sources { margin-top: auto; }
 
 .layout {
   display: grid;
@@ -303,6 +337,8 @@ h3.section { font-size: 21px; margin: 32px 0 12px; }
   .headlines { max-height: 40vh; }
   .lede, .terms { grid-template-columns: 1fr; }
   .briefing > h2 { font-size: 26px; }
+  .age-options { grid-template-columns: 1fr; }
+  .menu { padding: 32px 16px; }
   .figure-side { float: none; width: 100%; margin: 8px 0 18px; }
   .figure-inline { max-width: 100%; }
 }
