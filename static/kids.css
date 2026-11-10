@@ -27,20 +27,6 @@
   --display: "Bricolage Grotesque", "Lexend", sans-serif;
 }
 
-/* In dark mode the meadow fades into the dark page below the banner. */
-@media (prefers-color-scheme: dark) {
-  .horizon::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -44px;
-    height: 84px;
-    background: linear-gradient(rgba(167, 196, 122, 0), #a7c47a 28%, #55734a 62%, var(--bg));
-  }
-  body .layout { padding-top: 56px; }
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #1b2419;
@@ -242,4 +228,13 @@ h3.section {
 @media (prefers-reduced-motion: reduce) {
   button.primary { transition: none; }
   button.primary:hover, button.primary:active { transform: none; }
+}
+
+/* Dark mode: the banner turns to night, and its grass fades into the dark page. */
+@media (prefers-color-scheme: dark) {
+  .masthead { background: #152238; color: #f3eedc; }
+  .horizon { background-color: #152238; background-image: url("img/history-horizon-night.svg"); }
+  .masthead .home-link, .age-switch a { color: #f3eedc; }
+  .masthead .tagline { color: #c9d2dc; }
+  .age-badge { border-color: #f3eedc; }
 }
