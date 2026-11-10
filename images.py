@@ -22,7 +22,7 @@ import certifi
 
 API = "https://commons.wikimedia.org/w/api.php"
 # Wikimedia asks automated clients to identify themselves with a project link.
-USER_AGENT = "ThenAndNow/1.0 (https://github.com/Arabella-B/Alubend-Internship)"
+USER_AGENT = "ThenAndAgain/1.0 (https://github.com/Arabella-B/Alubend-Internship)"
 THUMB_WIDTH = 960
 MIN_WIDTH = 300  # anything smaller is too low-resolution to read
 RESULTS_PER_SEARCH = 8

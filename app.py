@@ -1,4 +1,4 @@
-"""Then & Now: historical context for today's news.
+"""Then & Again: historical context for today's news.
 
 Run with:  python app.py   then open http://localhost:5050
 """

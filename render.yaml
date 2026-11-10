@@ -1,4 +1,4 @@
-# Render Blueprint: deploys Then & Now as a Python web service.
+# Render Blueprint: deploys Then & Again as a Python web service.
 # In Render: New > Blueprint, pick this repo, then enter your ANTHROPIC_API_KEY when asked.
 services:
   - type: web

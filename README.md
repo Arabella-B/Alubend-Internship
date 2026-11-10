@@ -1,4 +1,4 @@
-# Then & Now
+# Then & Again
 
 A small web app that gives historical context for contemporary news stories.
 
