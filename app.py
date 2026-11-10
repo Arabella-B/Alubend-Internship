@@ -11,7 +11,7 @@ import logging
 import os
 
 import anthropic
-from flask import Flask, Response, jsonify, render_template, request, stream_with_context
+from flask import Flask, Response, jsonify, redirect, render_template, request, stream_with_context, url_for
 
 import audiences
 from feeds import get_headlines
@@ -40,14 +40,21 @@ def menu():
     return render_template("menu.html", audiences=audiences.AUDIENCES, today=_today())
 
 
-@app.get("/<any('11-13', '13-17', '18-plus'):audience>")
-def reader(audience):
+@app.get("/<any('kids', 'teens', 'adults'):slug>")
+def reader(slug):
+    audience = audiences.from_slug(slug)
     return render_template(
         "index.html",
         audience=audience,
         settings=audiences.get(audience),
         today=_today(),
     )
+
+
+# The pages used to live at /11-13, /13-17 and /18-plus; send old links to the new addresses.
+@app.get("/<any('11-13', '13-17', '18-plus'):old>")
+def old_reader(old):
+    return redirect(url_for("reader", slug=audiences.get(old)["slug"]), code=301)
 
 
 @app.get("/healthz")

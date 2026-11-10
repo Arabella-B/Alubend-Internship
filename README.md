@@ -86,7 +86,7 @@ Or set it up by hand with **New → Web Service**:
 | `feeds.py` | Fetches and caches headlines from public RSS feeds |
 | `historian.py` | Calls Claude with web fetch and web search; briefings and reading guides come back through strict tool schemas |
 | `images.py` | The `find_images` tool: searches Wikimedia Commons and checks the images Claude picks |
-| `app.py` | Flask server: serves the age-group menu (`/`), the pages `/11-13`, `/13-17` and `/18-plus`, `/api/headlines`, `/api/context` and `/api/source` (streamed as server-sent events) |
+| `app.py` | Flask server: serves the age-group menu (`/`), the pages `/kids`, `/teens` and `/adults` (the old `/11-13`, `/13-17` and `/18-plus` links redirect there), `/api/headlines`, `/api/context` and `/api/source` (streamed as server-sent events) |
 | `templates/`, `static/` | The web interface |
 
 Each briefing typically costs roughly $0.20–0.80 in API usage with fast mode on (about half that with `FAST_MODE=0`), including web searches. Briefings are cached in memory while the server

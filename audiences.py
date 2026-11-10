@@ -30,6 +30,7 @@ ADULT_FEEDS = {
 AUDIENCES = {
     "11-13": {
         "label": "Kids",
+        "slug": "kids",  # the page address, e.g. /kids
         "tagline": "The history behind the news, explained clearly",
         "blurb": "News written for young readers, with history told in clear, simple language.",
         "feeds": {
@@ -55,6 +56,7 @@ carefully. Maps, documents, everyday-life photographs and cartoons often work be
     },
     "13-17": {
         "label": "Teens",
+        "slug": "teens",  # the page address, e.g. /teens
         "tagline": "The history behind today's headlines, for students",
         "blurb": "World news with the history explained at secondary-school level.",
         "feeds": ADULT_FEEDS,
@@ -73,6 +75,7 @@ people.""",
     },
     "18-plus": {
         "label": "Adults",
+        "slug": "adults",  # the page address, e.g. /adults
         "tagline": "The history behind today's headlines",
         "blurb": "The full briefing, written for adult readers.",
         "feeds": ADULT_FEEDS,
@@ -86,6 +89,14 @@ DEFAULT = "18-plus"
 
 def get(key: str) -> dict:
     return AUDIENCES.get(key or DEFAULT, AUDIENCES[DEFAULT])
+
+
+def from_slug(slug: str) -> str:
+    """The age-group key for a page address such as 'teens'."""
+    for key, group in AUDIENCES.items():
+        if group["slug"] == slug:
+            return key
+    return DEFAULT
 
 
 def resolve(key: str) -> str:

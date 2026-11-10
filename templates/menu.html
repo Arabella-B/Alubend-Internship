@@ -26,7 +26,7 @@
       side, with sources and primary-source images. Each edition chooses its news and its language for its readers.</p>
     <nav class="age-options" aria-label="Age groups">
       {% for key, group in audiences.items() %}
-      <a class="age-option age-{{ key }}" href="{{ url_for('reader', audience=key) }}">
+      <a class="age-option age-{{ key }}" href="{{ url_for('reader', slug=group.slug) }}">
         <span class="age-art" aria-hidden="true"{% if key == '18-plus' %} title="Buzz Aldrin on the Moon, 20 July 1969. Photo: Neil Armstrong, NASA (public domain)"{% endif %}></span>
         <span class="age-body">
           <span class="age-label">{{ group.label }}</span>
