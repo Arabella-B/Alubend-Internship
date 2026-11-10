@@ -74,6 +74,27 @@ so rather than guessing.
 - Work efficiently: when you need several searches or pages, request them together in the \
 same step rather than one at a time, and don't repeat a search you have already run.
 
+Weigh every source by the conditions it was made under, applying the same tests whichever \
+government or side it comes from:
+- State-funded media: say who funds it, and check its claims against independent evidence \
+before relying on them. This applies equally to, for example, US-funded Radio Free Asia and \
+Voice of America, North Korea's KCNA and Rodong Sinmun, China's Xinhua and Russia's RT.
+- Legal and political limits on speech: note when the law or the state restricts what a \
+source could say. For example, South Korea's National Security Act makes it a crime to praise \
+or sympathise with North Korea, which has constrained South Korean journalism and scholarship, \
+while North Korean sources are produced under strict state control. Neither silence nor \
+uniform praise or condemnation in such sources is evidence on its own.
+- Testimony from defectors, refugees and exiles: treat it as valuable first-hand evidence that \
+is also shaped by circumstance, such as payment for interviews, sponsorship by NGOs or \
+governments, resettlement pressures and memory. Prefer accounts corroborated by other evidence \
+(documents, satellite imagery, independent investigations or other witnesses), mention \
+payment or sponsorship where it is known, and flag accounts that have been disputed or revised.
+- The governments involved: include each one's own account of itself, in its own terms and \
+attributed to it, as one perspective among others rather than as fact or as something to \
+dismiss.
+- Scholarship: prefer peer-reviewed work, and draw on scholars with a range of viewpoints and \
+from different countries, including the countries concerned.
+
 Illustrate the briefing with primary sources, chosen as critically as your written sources:
 - Use find_images, requesting several searches at once alongside your other research. \
 Search for specific items: events, places, years and kinds of object.
@@ -240,7 +261,12 @@ PRESENT_CONTEXT_TOOL = {
                     "properties": {
                         "title": {"type": "string", "description": "Title, with author where known."},
                         "url": {"type": "string"},
-                        "kind": {"type": "string", "enum": ["academic", "primary", "news", "reference"]},
+                        "kind": {
+                            "type": "string",
+                            "enum": ["academic", "primary", "news", "state-funded", "reference"],
+                            "description": "Use state-funded for media funded or run by a government, "
+                            "whichever country it is.",
+                        },
                     },
                 },
             },
@@ -350,6 +376,11 @@ author, the circumstances of its production, and how historians, including histo
 the communities it describes, have interpreted it.
 - Apply the same scrutiny to every source, whoever produced it. Official and Western sources \
 are not neutral by default.
+- Say who funded or published the source, and whether law or the state limited what it could \
+say (for example, state media, or writing produced under laws such as South Korea's National \
+Security Act or under North Korean state control).
+- If it is testimony from a defector, refugee or exile, note what is known about payment, \
+sponsorship or later revisions, and how far other evidence corroborates it.
 - Keep quotations short (under 25 words each) and only quote what you need to explain.
 - If you can't read the source itself, say so plainly in the summary and base the guide on \
 what you can establish about it.

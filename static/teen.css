@@ -212,6 +212,7 @@ h3.section {
 
 .kind { border-radius: 0; border: none; background: var(--ink); color: var(--bg); }
 .kind-academic { background: var(--blue); color: #fff; }
+.kind-state-funded { background: none; color: var(--text); border: 1.5px dashed var(--ink); }
 .sources a { color: var(--accent); }
 .guide-button { border-radius: 0; border: 1.5px solid var(--ink); color: var(--text); font-weight: 600; }
 .guide-button:hover { background: var(--sand); }

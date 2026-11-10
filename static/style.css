@@ -273,6 +273,7 @@ h3.section { font-size: 21px; margin: 32px 0 12px; }
   color: var(--muted);
 }
 .kind-academic { color: var(--accent); border-color: var(--accent); }
+.kind-state-funded { border-style: dashed; }
 
 .panel-intro { margin: -6px 0 12px; }
 .back { margin-bottom: 16px; }
