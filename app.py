@@ -5,6 +5,7 @@ Run with:  python app.py   then open http://localhost:5050
 
 from __future__ import annotations
 
+import datetime
 import json
 import logging
 import os
@@ -36,7 +37,13 @@ def menu():
 
 @app.get("/<any('11-13', '13-17', '18-plus'):audience>")
 def reader(audience):
-    return render_template("index.html", audience=audience, settings=audiences.get(audience))
+    today = datetime.date.today()
+    return render_template(
+        "index.html",
+        audience=audience,
+        settings=audiences.get(audience),
+        today=f"{today:%A} {today.day} {today:%B %Y}",
+    )
 
 
 @app.get("/healthz")

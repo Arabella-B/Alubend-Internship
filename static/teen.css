@@ -1,0 +1,235 @@
+/* Ages 13-17 theme. Loaded only on that page, on top of style.css.
+   A modern explainer magazine: paper and ink, bold expanded headlines, an editorial serif
+   for reading, and a restrained palette of deep blue, brick and sand. The brighter cobalt and
+   tangerine are kept for the headline list. Sharp corners, thick rules. */
+
+:root {
+  --bg: #f4f1ea;
+  --surface: #ffffff;
+  --text: #121212;
+  --muted: #5a5a5a;
+  --border: #dcd7cc;
+  --ink: #121212;
+  --accent: #2f4fbf;
+  --accent-soft: #e4e9f8;
+  --blue: #2f4fbf;
+  --brick: #c4492b;
+  --sand: #efe5cc;
+  --sand-dark: #dcbf7a;
+  --blue-tint: #e6ebf8;
+  --brick-tint: #f8e6dd;
+  /* Bright accents, used only on the headline list. */
+  --cobalt: #2446e8;
+  --tangerine: #ff5a36;
+  --serif: "Newsreader", Georgia, serif;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --display: "Archivo", "Inter", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f0f0f;
+    --surface: #191919;
+    --text: #f4f1ea;
+    --muted: #a7a7a7;
+    --border: #2e2e2e;
+    --ink: #f4f1ea;
+    --accent: #93a8ff;
+    --accent-soft: #1c2342;
+    --blue: #93a8ff;
+    --brick: #f08f72;
+    --sand: #26231c;
+    --sand-dark: #a88c4a;
+    --blue-tint: #1a2140;
+    --brick-tint: #2e1d17;
+    --cobalt: #7189ff;
+    --tangerine: #ff7656;
+  }
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--display);
+  font-stretch: 112%;
+  letter-spacing: -0.02em;
+}
+
+/* Masthead: a black cover band with an oversized title and an edition line. */
+.masthead {
+  background: #0d0d0d;
+  color: #f4f1ea;
+  border-bottom: none;
+  padding: 26px 28px 24px;
+  align-items: flex-end;
+}
+.edition {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #c9c2b3;
+}
+.masthead h1 { font-size: clamp(38px, 6vw, 64px); font-weight: 900; line-height: 0.95; }
+.masthead .home-link { color: #f4f1ea; }
+.masthead .tagline { color: #bdbdbd; font-size: 15px; margin-top: 8px; }
+.age-badge {
+  background: none;
+  color: #f4f1ea;
+  border: 1.5px solid #8a8577;
+  border-radius: 0;
+  font-family: var(--display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.age-switch a { color: #f4f1ea; }
+
+/* Three muted colour bars under the masthead. */
+.stripe { display: grid; grid-template-columns: 3fr 2fr 1fr; height: 6px; }
+.stripe span:nth-child(1) { background: var(--blue); }
+.stripe span:nth-child(2) { background: var(--brick); }
+.stripe span:nth-child(3) { background: var(--sand-dark); }
+
+/* Panels: flat, square, with a heavy top rule. */
+.panel,
+.content {
+  border: none;
+  border-top: 4px solid var(--ink);
+  border-radius: 0;
+  background: var(--surface);
+}
+.panel h2 {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+input, select, textarea { border-radius: 0; border: 1.5px solid var(--border); background: var(--bg); }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--blue); outline-offset: -1px; }
+
+button.primary {
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 0;
+  font-family: var(--display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 11px 14px;
+}
+button.primary:hover { background: var(--blue); color: #fff; }
+button.ghost { border-radius: 0; border: 1.5px solid var(--ink); color: var(--text); font-weight: 600; }
+
+/* Headlines: no numbering, so no story looks more important than another. Bright colour
+   marks each one: a cobalt bar and source, and a tangerine underline on hover. */
+.headline { padding: 10px 4px 10px 14px; border-left: 3px solid var(--cobalt); margin: 6px 0; }
+.headline:hover, .headline.active { background: none; }
+.headline:hover .title, .headline.active .title {
+  text-decoration: underline;
+  text-decoration-color: var(--tangerine);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 3px;
+}
+.headline .meta { text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px; font-weight: 700; color: var(--cobalt); }
+.headline:hover, .headline.active { border-left-color: var(--tangerine); }
+.headline .title { font-family: var(--display); font-stretch: 105%; font-size: 16px; font-weight: 700; }
+
+/* Empty and loading states */
+.empty h2 { font-size: 34px; font-weight: 900; }
+.spinner { border-radius: 0; border: 4px solid var(--border); border-top-color: var(--brick); }
+.loading-title { font-family: var(--display); font-weight: 800; }
+
+/* Briefing */
+.kicker {
+  display: inline-block;
+  background: var(--brick);
+  color: #fff;
+  padding: 3px 10px;
+  letter-spacing: 0.1em;
+  font-weight: 800;
+}
+.briefing > h2, #guide-body > h2 { font-size: clamp(30px, 4.2vw, 46px); font-weight: 900; line-height: 1.02; }
+
+.lede { border: none; gap: 16px; padding: 0; }
+.lede > div { padding: 14px 16px; background: var(--blue-tint); border-top: 4px solid var(--blue); }
+.lede > div:nth-child(2) { background: var(--brick-tint); border-top-color: var(--brick); }
+.lede h3 { color: var(--text); font-weight: 700; }
+.lede p { font-family: var(--serif); font-size: 17px; line-height: 1.45; }
+
+/* Section headings: a small label sitting on a thick rule. */
+h3.section {
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 40px 0 16px;
+  padding-top: 10px;
+  border-top: 4px solid var(--ink);
+}
+
+.prose p { font-family: var(--serif); font-size: 19px; line-height: 1.6; }
+.prose > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 72px;
+  line-height: 0.8;
+  padding: 8px 10px 0 0;
+  color: var(--brick);
+}
+
+/* Timeline: years in a bold left column. */
+.timeline { border-left: none; padding: 0; }
+.timeline li {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+.timeline li::before { content: none; }
+.timeline .date {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 1.1;
+  color: var(--blue);
+}
+.timeline .figure-inline { grid-column: 2; }
+
+.card { border: none; border-left: 4px solid var(--blue); border-radius: 0; background: var(--bg); }
+#b-contested .card { border-left-color: var(--brick); }
+.card h4 { font-family: var(--display); font-weight: 800; font-size: 18px; }
+.card strong, .pairs dd.memory strong, .figure-critical strong { color: var(--accent); }
+
+/* Contested accounts read like pull quotes. */
+#b-contested .card p { font-family: var(--serif); font-size: 17px; }
+
+.pairs dt { font-family: var(--display); font-weight: 800; font-size: 17px; }
+.pairs dd.memory { border-left: 3px solid var(--sand-dark); }
+.terms div { border-top: 1px solid var(--border); padding-top: 4px; }
+
+.kind { border-radius: 0; border: none; background: var(--ink); color: var(--bg); }
+.kind-academic { background: var(--blue); color: #fff; }
+.sources a { color: var(--accent); }
+.guide-button { border-radius: 0; border: 1.5px solid var(--ink); color: var(--text); font-weight: 600; }
+.guide-button:hover { background: var(--sand); }
+
+/* Images run large, with magazine-style captions. */
+.figure img { border: none; border-radius: 0; }
+.figure-caption { font-weight: 700; }
+.figure figcaption { border-top: 2px solid var(--ink); padding-top: 8px; }
+
+.disclaimer { border-top: 4px solid var(--ink); }
+
+@media (max-width: 860px) {
+  .masthead { padding: 20px 16px; }
+  .timeline li { grid-template-columns: 76px 1fr; gap: 10px; }
+  .timeline .date { font-size: 17px; }
+  .prose p { font-size: 18px; }
+}
+
+@media (prefers-color-scheme: dark) {
+  .kicker, .kind-academic { color: #0d0d0d; }
+}
