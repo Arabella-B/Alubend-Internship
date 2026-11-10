@@ -1,0 +1,245 @@
+/* Ages 11-13 theme. Loaded only on that page, on top of style.css.
+   Flat, storybook earth colours (forest green, terracotta, ochre, leaf green, sky blue on
+   parchment) with chunky outlines, offset "sticker" shadows and highlighter headings:
+   playful, but built for reading. */
+
+:root {
+  --bg: #e6eed3;  /* the meadow at the bottom of the banner */
+  --surface: #fbfaf0;
+  --text: #2d3a2e;
+  --muted: #566552;
+  --border: #cddcb0;
+  --ink: #2d3a2e;
+  --shadow: #2d3a2e;
+  --accent: #a3482a;
+  --accent-soft: #f6ddd0;
+  --terracotta: #d9774f;
+  --ochre: #dba54a;
+  --leaf: #6f9a5a;
+  --sky: #6fb0cc;
+  --hl-1: #f3dc9f;
+  --hl-2: #d3e6bd;
+  --hl-3: #f4cbb6;
+  --hl-4: #cfe6ef;
+  --field: #ffffff;
+  --serif: "Lexend", "Trebuchet MS", sans-serif;
+  --sans: "Lexend", "Trebuchet MS", sans-serif;
+  --display: "Bricolage Grotesque", "Lexend", sans-serif;
+}
+
+/* In dark mode the meadow fades into the dark page below the banner. */
+@media (prefers-color-scheme: dark) {
+  .horizon::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -44px;
+    height: 84px;
+    background: linear-gradient(rgba(167, 196, 122, 0), #a7c47a 28%, #55734a 62%, var(--bg));
+  }
+  body .layout { padding-top: 56px; }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b2419;
+    --surface: #232d25;
+    --text: #f3eedc;
+    --muted: #b9c2b1;
+    --border: #3a4a3c;
+    --ink: #0d130e;
+    --shadow: #0d130e;
+    --accent: #eba184;
+    --accent-soft: #3d2e25;
+    --hl-1: #66511f;
+    --hl-2: #34502e;
+    --hl-3: #6b3826;
+    --hl-4: #26485a;
+    --field: #1c251e;
+  }
+}
+
+body { font-size: 16px; line-height: 1.6; }
+h1, h2, h3, h4 { font-family: var(--display); letter-spacing: -0.01em; }
+
+/* Masthead: the title sits in the daytime sky, above the history horizon. */
+.masthead {
+  padding: 28px 28px 30px;
+  border-bottom: none;
+  background: #8ccbe0;
+  color: #2d3a2e;
+}
+.horizon {
+  position: relative;
+  height: 175px;
+  margin-top: -1px;
+  background: #8ccbe0 url("img/history-horizon.svg") center bottom / cover no-repeat;
+}
+.masthead h1 { font-size: 40px; font-weight: 800; }
+.masthead .home-link { color: #2d3a2e; }
+.masthead .tagline { color: #2f4a3a; font-size: 16px; }
+.age-badge {
+  background: var(--ochre);
+  color: #2d3a2e;
+  border: 2px solid #2d3a2e;
+}
+.age-switch a { color: #2d3a2e; font-weight: 500; }
+
+/* Panels and the reading area: outlined cards with an offset shadow. */
+.panel,
+.content {
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 5px 5px 0 var(--shadow);
+}
+.layout { padding-top: 12px; }
+.panel h2 { font-size: 21px; font-weight: 800; }
+
+input, select, textarea {
+  background: var(--field);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 9px 11px;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--terracotta); }
+
+button.primary {
+  background: var(--terracotta);
+  color: #2d3a2e;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 700;
+  box-shadow: 3px 3px 0 var(--shadow);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+button.primary:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--shadow); }
+button.primary:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--shadow); }
+button.ghost { border: 2px solid var(--border); border-radius: 999px; color: var(--text); font-weight: 500; }
+
+/* Headlines */
+.headlines li + li { border-top: 2px dashed var(--border); }
+.headline { border-radius: 12px; padding: 10px 8px; }
+.headline:hover, .headline.active { background: var(--hl-1); }
+.headline .title { font-family: var(--display); font-size: 17px; font-weight: 700; }
+.headline .meta { font-weight: 500; }
+
+/* Empty and loading states */
+.empty h2 { font-size: 30px; font-weight: 800; }
+.spinner { border: 4px solid var(--border); border-top-color: var(--terracotta); }
+.loading-title { font-family: var(--display); font-weight: 700; }
+
+/* Briefing */
+.kicker {
+  display: inline-block;
+  background: var(--ink);
+  color: #fbf6e6;
+  border-radius: 999px;
+  padding: 3px 12px;
+  letter-spacing: 0.06em;
+}
+@media (prefers-color-scheme: dark) { .kicker { background: var(--ochre); color: #2d3a2e; } }
+.briefing > h2, #guide-body > h2 { font-size: 34px; font-weight: 800; line-height: 1.15; }
+
+.lede {
+  border: none;
+  gap: 14px;
+  padding: 0;
+}
+.lede > div {
+  background: var(--hl-2);
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.lede > div:nth-child(2) { background: var(--hl-1); }
+.lede h3 { color: var(--text); font-weight: 700; }
+
+/* Section headings look underlined with a highlighter, in rotating colours. */
+h3.section {
+  display: inline-block;
+  font-size: 23px;
+  font-weight: 800;
+  margin: 36px 0 14px;
+  padding: 0 4px;
+  background: linear-gradient(transparent 55%, var(--hl-1) 55%, var(--hl-1) 92%, transparent 92%);
+}
+.briefing h3.section:nth-of-type(4n + 2) { background-image: linear-gradient(transparent 55%, var(--hl-2) 55%, var(--hl-2) 92%, transparent 92%); }
+.briefing h3.section:nth-of-type(4n + 3) { background-image: linear-gradient(transparent 55%, var(--hl-3) 55%, var(--hl-3) 92%, transparent 92%); }
+.briefing h3.section:nth-of-type(4n) { background-image: linear-gradient(transparent 55%, var(--hl-4) 55%, var(--hl-4) 92%, transparent 92%); }
+
+.prose p { font-family: var(--sans); font-size: 17px; line-height: 1.75; }
+
+/* Timeline: a dashed path with coloured stepping stones. */
+.timeline { border-left: 3px dashed var(--border); padding-left: 20px; }
+.timeline li::before {
+  left: -30px;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  background: var(--terracotta);
+  border: 2px solid var(--ink);
+}
+.timeline li:nth-child(4n + 2)::before { background: var(--ochre); }
+.timeline li:nth-child(4n + 3)::before { background: var(--leaf); }
+.timeline li:nth-child(4n)::before { background: var(--sky); }
+.timeline .date {
+  display: inline-block;
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  margin-right: 6px;
+}
+
+.card {
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 3px 3px 0 var(--shadow);
+}
+.card h4 { font-family: var(--display); font-weight: 700; }
+.card strong, .pairs dd.memory strong, .figure-critical strong { color: var(--accent); }
+
+.pairs dt { font-family: var(--display); font-size: 17px; }
+.pairs dd.memory { border-left: 4px solid var(--hl-3); }
+.terms div {
+  background: var(--hl-2);
+  border-radius: 12px;
+  padding: 2px 12px 10px;
+  margin-bottom: 10px;
+}
+
+.kind { border: 2px solid var(--ink); border-radius: 999px; color: var(--text); background: var(--hl-1); }
+.guide-button { border: 2px solid var(--ink); color: var(--text); background: var(--surface); font-weight: 500; }
+.guide-button:hover { background: var(--hl-1); }
+
+/* Images look like snapshots pinned into a scrapbook. */
+.figure-side,
+.figure-inline {
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 4px 4px 0 var(--shadow);
+  transform: rotate(-1.2deg);
+}
+.timeline .figure-inline { transform: rotate(1deg); }
+.figure img { border: 2px solid var(--ink); border-radius: 8px; }
+.figure-side img, .figure-inline img { border-width: 0; border-radius: 4px; }
+
+.disclaimer { border-top: 2px dashed var(--border); }
+
+@media (max-width: 860px) {
+  .masthead { padding: 20px 16px 22px; }
+  .horizon { height: 120px; }
+  .masthead h1 { font-size: 32px; }
+  .briefing > h2, #guide-body > h2 { font-size: 28px; }
+  .figure-side, .figure-inline { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button.primary { transition: none; }
+  button.primary:hover, button.primary:active { transform: none; }
+}

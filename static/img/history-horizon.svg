@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 240" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.35" stop-color="#8ccbe0"/>
+      <stop offset="1" stop-color="#d8eeee"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Daytime sky -->
+  <rect width="1600" height="240" fill="url(#sky)"/>
+
+  <!-- Sun -->
+  <circle cx="1390" cy="60" r="38" fill="#f6d77a" opacity=".45"/>
+  <circle cx="1390" cy="60" r="24" fill="#f4c04e"/>
+
+  <!-- Clouds -->
+  <g fill="#ffffff">
+    <g opacity=".95"><ellipse cx="120" cy="50" rx="44" ry="13"/><circle cx="104" cy="42" r="15"/><circle cx="132" cy="36" r="19"/></g>
+    <g opacity=".85"><ellipse cx="560" cy="34" rx="38" ry="11"/><circle cx="548" cy="27" r="12"/><circle cx="572" cy="23" r="15"/></g>
+    <g opacity=".95"><ellipse cx="860" cy="62" rx="52" ry="14"/><circle cx="842" cy="53" r="17"/><circle cx="874" cy="46" r="22"/></g>
+    <g opacity=".8"><ellipse cx="1220" cy="30" rx="34" ry="10"/><circle cx="1210" cy="24" r="11"/><circle cx="1230" cy="20" r="13"/></g>
+    <g opacity=".9"><ellipse cx="1540" cy="88" rx="40" ry="12"/><circle cx="1528" cy="80" r="13"/><circle cx="1552" cy="75" r="16"/></g>
+  </g>
+
+  <!-- Birds -->
+  <g fill="none" stroke="#2d3a2e" stroke-width="2" stroke-linecap="round" opacity=".6">
+    <path d="M660 70 q6 -6 12 0 q6 -6 12 0"/>
+    <path d="M690 58 q5 -5 10 0 q5 -5 10 0"/>
+    <path d="M1460 120 q5 -5 10 0 q5 -5 10 0"/>
+  </g>
+
+  <!-- Hot-air balloon -->
+  <g transform="translate(290 34)">
+    <path d="M0 26 C0 6 14 -6 26 -6 C38 -6 52 6 52 26 C52 40 36 50 32 58 L20 58 C16 50 0 40 0 26 Z" fill="#d9774f"/>
+    <path d="M26 -6 C20 6 18 30 22 58 L30 58 C34 30 32 6 26 -6 Z" fill="#dba54a"/>
+    <path d="M20 58 L22 68 M32 58 L30 68" stroke="#6b4f36" stroke-width="1.5"/>
+    <rect x="20" y="68" width="12" height="9" rx="2" fill="#8b6b4a"/>
+  </g>
+
+  <!-- Biplane -->
+  <g transform="translate(1100 44)">
+    <rect x="0" y="10" width="60" height="9" rx="4.5" fill="#c8643f"/>
+    <rect x="18" y="0" width="12" height="30" rx="3" fill="#dba54a"/>
+    <rect x="54" y="2" width="4" height="26" rx="2" fill="#6b4f36" opacity=".7"/>
+    <path d="M0 14 L-10 6 L-8 18 Z" fill="#c8643f"/>
+    <path d="M-14 14 C-40 10 -70 18 -100 12" stroke="#ffffff" stroke-width="2" fill="none" stroke-dasharray="4 5" opacity=".9"/>
+  </g>
+
+  <!-- Distant misty hills -->
+  <path d="M0 176 L70 160 L140 170 L250 142 L330 162 L410 136 L520 150 L600 128 L700 146 L790 124 L880 140 L980 122 L1080 142 L1170 126 L1260 146 L1350 132 L1450 152 L1530 140 L1600 158 L1600 210 L0 210 Z" fill="#a9cbb7"/>
+
+  <!-- Mountains with snowy peaks -->
+  <g fill="#7f9c74">
+    <path d="M286 176 L318 132 L334 150 L352 124 L392 170 Z"/>
+    <path d="M556 166 L590 126 L610 146 L634 116 L676 162 Z"/>
+    <path d="M880 160 L914 128 L932 144 L956 112 L994 160 Z"/>
+    <path d="M1138 166 L1170 130 L1186 146 L1206 122 L1236 168 Z"/>
+    <path d="M1366 178 L1396 140 L1410 154 L1428 134 L1458 182 Z"/>
+  </g>
+  <g fill="#647f5c">
+    <path d="M352 124 L392 170 L352 170 Z"/><path d="M634 116 L676 162 L634 162 Z"/>
+    <path d="M956 112 L994 160 L956 160 Z"/><path d="M1206 122 L1236 168 L1206 168 Z"/>
+    <path d="M1428 134 L1458 182 L1428 182 Z"/>
+  </g>
+  <g fill="#f4f1e6">
+    <path d="M343 137 L352 124 L361 135 L355 133 L350 138 Z"/>
+    <path d="M624 130 L634 116 L645 128 L638 126 L632 132 Z"/>
+    <path d="M946 126 L956 112 L967 124 L960 122 L954 128 Z"/>
+  </g>
+
+  <!-- Ground: grass fading into the meadow colour of the page below -->
+  <path d="M0 190 Q800 120 1600 190 L1600 240 L0 240 Z" fill="#a7c47a"/>
+  <path d="M0 204 Q800 144 1600 204 L1600 240 L0 240 Z" fill="#bcd394"/>
+  <path d="M0 218 Q800 168 1600 218 L1600 240 L0 240 Z" fill="#d3e2b4"/>
+  <rect x="0" y="232" width="1600" height="8" fill="#e6eed3"/>
+  <path d="M0 226 Q800 186 1600 226 L1600 240 L0 240 Z" fill="#e6eed3"/>
+  <!-- Desert sand under the pyramids -->
+  <ellipse cx="190" cy="186" rx="130" ry="10" fill="#e6d29a"/>
+
+  <!-- Trees -->
+  <g>
+    <rect x="337" y="160" width="4" height="12" fill="#6b4f36"/><circle cx="339" cy="154" r="11" fill="#5f8a4f"/>
+    <rect x="602" y="146" width="4" height="12" fill="#6b4f36"/><circle cx="604" cy="140" r="12" fill="#4f7a45"/>
+    <rect x="622" y="150" width="3" height="9" fill="#6b4f36"/><circle cx="623" cy="146" r="8" fill="#5f8a4f"/>
+    <rect x="918" y="146" width="4" height="12" fill="#6b4f36"/><circle cx="920" cy="140" r="12" fill="#5f8a4f"/>
+    <rect x="1168" y="152" width="4" height="12" fill="#6b4f36"/><circle cx="1170" cy="146" r="11" fill="#4f7a45"/>
+    <rect x="1410" y="166" width="4" height="12" fill="#6b4f36"/><circle cx="1412" cy="160" r="11" fill="#5f8a4f"/>
+  </g>
+
+  <!-- Pyramids -->
+  <path d="M210 182 L250 136 L290 182 Z" fill="#dba54a"/>
+  <path d="M250 136 L290 182 L250 182 Z" fill="#b9862f"/>
+  <path d="M104 184 L170 108 L236 184 Z" fill="#dba54a"/>
+  <path d="M170 108 L236 184 L170 184 Z" fill="#b9862f"/>
+
+  <!-- Greek temple -->
+  <g fill="#fbf6e6">
+    <path d="M386 106 L450 80 L514 106 Z"/>
+    <rect x="390" y="106" width="120" height="8"/>
+    <rect x="398" y="116" width="10" height="38"/><rect x="420" y="116" width="10" height="38"/>
+    <rect x="445" y="116" width="10" height="38"/><rect x="470" y="116" width="10" height="38"/>
+    <rect x="492" y="116" width="10" height="38"/>
+    <rect x="386" y="154" width="128" height="8"/><rect x="380" y="162" width="140" height="6"/>
+  </g>
+  <path d="M398 116 h104 v3 h-104 Z M386 106 L450 80 L450 86 L400 106 Z" fill="#e3d6ad"/>
+
+  <!-- Castle -->
+  <g fill="#a39383">
+    <rect x="712" y="112" width="96" height="48"/>
+    <rect x="696" y="88" width="32" height="72"/><rect x="792" y="88" width="32" height="72"/>
+    <rect x="696" y="80" width="8" height="10"/><rect x="708" y="80" width="8" height="10"/><rect x="720" y="80" width="8" height="10"/>
+    <rect x="792" y="80" width="8" height="10"/><rect x="804" y="80" width="8" height="10"/><rect x="816" y="80" width="8" height="10"/>
+    <rect x="732" y="104" width="8" height="9"/><rect x="748" y="104" width="8" height="9"/>
+    <rect x="764" y="104" width="8" height="9"/><rect x="780" y="104" width="8" height="9"/>
+  </g>
+  <rect x="808" y="88" width="16" height="72" fill="#8c7d6e"/>
+  <path d="M746 160 V138 a14 14 0 0 1 28 0 V160 Z" fill="#5a4636"/>
+  <rect x="706" y="104" width="8" height="12" rx="4" fill="#5a4636"/>
+  <rect x="806" y="104" width="8" height="12" rx="4" fill="#5a4636"/>
+  <rect x="711" y="56" width="2" height="26" fill="#6b4f36"/>
+  <path d="M713 56 L734 62 L713 68 Z" fill="#c8643f"/>
+
+  <!-- Pagoda -->
+  <g>
+    <rect x="1022" y="138" width="36" height="24" fill="#c8643f"/>
+    <rect x="1026" y="112" width="28" height="20" fill="#c8643f"/>
+    <rect x="1030" y="88" width="20" height="18" fill="#c8643f"/>
+    <path d="M1002 140 Q1012 132 1020 132 L1060 132 Q1068 132 1078 140 Z" fill="#3f6f5a"/>
+    <path d="M1008 114 Q1016 106 1024 106 L1056 106 Q1064 106 1072 114 Z" fill="#3f6f5a"/>
+    <path d="M1014 90 Q1022 82 1028 82 L1052 82 Q1058 82 1066 90 Z" fill="#3f6f5a"/>
+    <rect x="1038" y="62" width="4" height="20" fill="#3f6f5a"/>
+    <circle cx="1040" cy="62" r="4" fill="#dba54a"/>
+    <rect x="1034" y="148" width="12" height="14" rx="6" fill="#5a4636"/>
+  </g>
+
+  <!-- Windmill -->
+  <path d="M1262 172 L1269 118 L1291 118 L1298 172 Z" fill="#fbf6e6"/>
+  <path d="M1266 118 a14 12 0 0 1 28 0 Z" fill="#c8643f"/>
+  <rect x="1274" y="152" width="12" height="20" rx="6" fill="#5a4636"/>
+  <g transform="rotate(22 1280 118)" fill="#8b6b4a">
+    <rect x="1277" y="70" width="6" height="96" rx="2"/>
+    <rect x="1232" y="115" width="96" height="6" rx="2"/>
+  </g>
+  <g transform="rotate(22 1280 118)" fill="#fbf6e6" opacity=".9">
+    <rect x="1283" y="72" width="12" height="38" rx="2"/>
+    <rect x="1265" y="126" width="12" height="38" rx="2"/>
+    <rect x="1234" y="103" width="38" height="12" rx="2"/>
+    <rect x="1288" y="121" width="38" height="12" rx="2"/>
+  </g>
+  <circle cx="1280" cy="118" r="4" fill="#5a4636"/>
+
+  <!-- Clock tower -->
+  <rect x="1474" y="102" width="32" height="84" fill="#d6bf8a"/>
+  <rect x="1470" y="98" width="40" height="8" fill="#bfa56c"/>
+  <path d="M1470 98 L1490 60 L1510 98 Z" fill="#3f6f5a"/>
+  <circle cx="1490" cy="122" r="10" fill="#fbf6e6"/>
+  <path d="M1490 122 V115 M1490 122 L1495 125" stroke="#2d3a2e" stroke-width="2" stroke-linecap="round"/>
+  <rect x="1482" y="146" width="6" height="12" rx="3" fill="#5a4636"/>
+  <rect x="1492" y="146" width="6" height="12" rx="3" fill="#5a4636"/>
+</svg>
