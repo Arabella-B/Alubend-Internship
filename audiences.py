@@ -29,7 +29,7 @@ ADULT_FEEDS = {
 
 AUDIENCES = {
     "11-13": {
-        "label": "Ages 11–13",
+        "label": "Kids",
         "tagline": "The history behind the news, explained clearly",
         "blurb": "News written for young readers, with history told in clear, simple language.",
         "feeds": {
@@ -54,7 +54,7 @@ executions or graphic violence, and no frightening propaganda unless you explain
 carefully. Maps, documents, everyday-life photographs and cartoons often work best.""",
     },
     "13-17": {
-        "label": "Ages 13–17",
+        "label": "Teens",
         "tagline": "The history behind today's headlines, for students",
         "blurb": "World news with the history explained at secondary-school level.",
         "feeds": ADULT_FEEDS,
@@ -72,7 +72,7 @@ briefly and without detail.
 people.""",
     },
     "18-plus": {
-        "label": "Ages 18+",
+        "label": "Adults",
         "tagline": "The history behind today's headlines",
         "blurb": "The full briefing, written for adult readers.",
         "feeds": ADULT_FEEDS,
