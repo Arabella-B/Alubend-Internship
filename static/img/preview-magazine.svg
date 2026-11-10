@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 140" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <!-- Editorial cover art for the 13-17 magazine: a ruined Roman amphitheatre at sunset,
+       framed by cypress trees, in flat gold, brick and blue on black.
+       Everything important sits between x 50 and 350, so the card never crops it. -->
+  <defs>
+    <clipPath id="building">
+      <path d="M132 122 L132 46 Q222 34 314 44 C317 52 311 58 318 66 C325 74 319 84 330 92 C338 98 334 108 344 114 L346 122 Z"/>
+    </clipPath>
+  </defs>
+
+  <rect width="400" height="140" fill="#0d0d0d"/>
+
+  <!-- Ground (full width, behind the scene) -->
+  <rect x="0" y="121" width="400" height="19" fill="#22398f"/>
+  <rect x="0" y="121" width="400" height="2" fill="#2f4fbf"/>
+
+  <g transform="translate(200 122) scale(0.84) translate(-200 -122)">
+  <!-- Setting sun -->
+  <circle cx="236" cy="62" r="48" fill="#c4492b"/>
+
+  <!-- Amphitheatre: arches and ledges are clipped to the outline, so the broken edge cuts them -->
+  <g clip-path="url(#building)" transform="translate(-14 0)">
+    <rect x="120" y="30" width="240" height="100" fill="#dcbf7a"/>
+    <rect x="120" y="30" width="240" height="20" fill="#c6a862"/>
+    <rect x="120" y="66" width="240" height="5" fill="#c6a862"/>
+    <rect x="120" y="91" width="240" height="5" fill="#c6a862"/>
+    <g fill="#0d0d0d">
+      <rect x="144" y="54" width="7" height="8"/><rect x="166" y="54" width="7" height="8"/>
+      <rect x="188" y="54" width="7" height="8"/><rect x="210" y="54" width="7" height="8"/>
+      <rect x="232" y="54" width="7" height="8"/><rect x="254" y="54" width="7" height="8"/>
+      <rect x="276" y="54" width="7" height="8"/><rect x="298" y="54" width="7" height="8"/>
+    </g>
+    <g fill="#0d0d0d">
+      <path d="M139 91 V80 a6 6 0 0 1 12 0 V91 Z"/><path d="M161 91 V80 a6 6 0 0 1 12 0 V91 Z"/>
+      <path d="M183 91 V80 a6 6 0 0 1 12 0 V91 Z"/><path d="M205 91 V80 a6 6 0 0 1 12 0 V91 Z"/>
+      <path d="M227 91 V80 a6 6 0 0 1 12 0 V91 Z"/><path d="M249 91 V80 a6 6 0 0 1 12 0 V91 Z"/>
+      <path d="M271 91 V80 a6 6 0 0 1 12 0 V91 Z"/><path d="M293 91 V80 a6 6 0 0 1 12 0 V91 Z"/>
+      <path d="M315 91 V80 a6 6 0 0 1 12 0 V91 Z"/><path d="M337 91 V80 a6 6 0 0 1 12 0 V91 Z"/>
+    </g>
+    <g fill="#0d0d0d">
+      <path d="M138 122 V106 a7 7 0 0 1 14 0 V122 Z"/><path d="M160 122 V106 a7 7 0 0 1 14 0 V122 Z"/>
+      <path d="M182 122 V106 a7 7 0 0 1 14 0 V122 Z"/><path d="M204 122 V106 a7 7 0 0 1 14 0 V122 Z"/>
+      <path d="M226 122 V106 a7 7 0 0 1 14 0 V122 Z"/><path d="M248 122 V106 a7 7 0 0 1 14 0 V122 Z"/>
+      <path d="M270 122 V106 a7 7 0 0 1 14 0 V122 Z"/><path d="M292 122 V106 a7 7 0 0 1 14 0 V122 Z"/>
+      <path d="M314 122 V106 a7 7 0 0 1 14 0 V122 Z"/><path d="M336 122 V106 a7 7 0 0 1 14 0 V122 Z"/>
+    </g>
+    <!-- The thickness of the broken wall -->
+    <path d="M309 44 C312 52 306 58 313 66 C320 74 314 84 325 92 C333 98 329 108 339 114 L341 122 L360 122 L360 30 L306 30 Z" fill="#b39654"/>
+  </g>
+
+  </g>
+  <g transform="translate(200 122) scale(0.84) translate(-200 -122)">
+  <!-- Cypress trees: a tall-and-short pair framing each side of the ruin -->
+  <g>
+    <path d="M 95 123 C 86 106 88 102 95 78 C 102 102 104 106 95 123 Z" fill="#22398f"/>
+    <path d="M 110 123 C 101 106 103 80 110 56 C 117 80 119 106 110 123 Z" fill="#2f4fbf"/>
+    <path d="M 340 123 C 331 106 333 78 340 54 C 347 78 349 106 340 123 Z" fill="#2f4fbf"/>
+    <path d="M 355 123 C 346 106 348 102 355 78 C 362 102 364 106 355 123 Z" fill="#22398f"/>
+  </g>
+
+  </g>
+</svg>

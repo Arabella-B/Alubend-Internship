@@ -30,19 +30,23 @@ def _sse(event: dict) -> str:
     return f"data: {json.dumps(event)}\n\n"
 
 
+def _today() -> str:
+    today = datetime.date.today()
+    return f"{today:%A} {today.day} {today:%B %Y}"
+
+
 @app.get("/")
 def menu():
-    return render_template("menu.html", audiences=audiences.AUDIENCES)
+    return render_template("menu.html", audiences=audiences.AUDIENCES, today=_today())
 
 
 @app.get("/<any('11-13', '13-17', '18-plus'):audience>")
 def reader(audience):
-    today = datetime.date.today()
     return render_template(
         "index.html",
         audience=audience,
         settings=audiences.get(audience),
-        today=f"{today:%A} {today.day} {today:%B %Y}",
+        today=_today(),
     )
 
 
